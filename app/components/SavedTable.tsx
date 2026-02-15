@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Download, Phone, Zap, Mail, Trash2, CheckCircle, Smartphone, MapPin } from 'lucide-react';
+import { Download, Phone, Zap, Mail, Trash2, CheckCircle, Smartphone, MapPin, Lock } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useAuth } from '@/components/AuthProvider';
+import { useRouter } from 'next/navigation';
 
 interface Lead {
     Name: string;
@@ -116,6 +118,33 @@ export default function SavedTable() {
     };
 
     if (loading && data.length === 0) return <div className="text-slate-400 p-8 text-center">Loading records...</div>;
+
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+
+    if (authLoading) return null; // Or a spinner
+
+    if (!user) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 bg-white/5 rounded-3xl border border-white/10 mt-8">
+                <div className="h-20 w-20 bg-slate-800 rounded-full flex items-center justify-center">
+                    <Lock className="h-10 w-10 text-slate-400" />
+                </div>
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-200">Login Required</h2>
+                    <p className="text-slate-400 max-w-md mx-auto mt-2">
+                        Please sign in to access your saved leads and perform bulk actions.
+                    </p>
+                </div>
+                <button
+                    onClick={() => router.push('/login')}
+                    className="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                >
+                    Sign In / Create Account
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
