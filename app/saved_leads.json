@@ -1,0 +1,34 @@
+[
+  {
+    "Name": "ROWLANDS PHARMACY",
+    "ODS_Code": "FA002",
+    "Status": "Active",
+    "Address": "",
+    "City": "",
+    "Postcode": "SK7 5LD",
+    "Country": "UK",
+    "Role": "PHARMACY",
+    "Type": "Pharmacy",
+    "PhoneNumber": "0161 4838729",
+    "Email": "",
+    "Website": "",
+    "FullAddress": "61 ARUNDEL AVENUE, HAZEL GROVE, STOCKPORT, CHESHIRE",
+    "SavedAt": "2026-02-15T18:13:39.476Z"
+  },
+  {
+    "Name": "MANCHESTER UNIVERSITY NHS FOUNDATION TRUST",
+    "ODS_Code": "R0A",
+    "Status": "Active",
+    "Address": "",
+    "City": "",
+    "Postcode": "M13 9WL",
+    "Country": "UK",
+    "Role": "NHS TRUST",
+    "Type": "Hospital",
+    "SavedAt": "2026-02-15T18:15:11.478Z",
+    "Website": "HTTPS://MFT.NHS.UK/",
+    "PhoneNumber": "0300 3309444",
+    "Email": "",
+    "FullAddress": "COBBETT HOUSE, OXFORD ROAD, MANCHESTER"
+  }
+]
