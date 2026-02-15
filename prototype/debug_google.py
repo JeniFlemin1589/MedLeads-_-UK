@@ -1,7 +1,7 @@
 import requests
 import urllib.parse
 
-API_KEY = "AIzaSyAYgtfwk7jyAnfyywTIImIScEwhbiLDp5k"
+API_KEY = "A------------"
 NAME = "Boots"
 POSTCODE = "UB8 1AB" # Just a random postcode example, or I can use one from the user's data if I knew it.
 # Let's try a known pharmacy from a previous CSV view if possible, or just a generic search.
