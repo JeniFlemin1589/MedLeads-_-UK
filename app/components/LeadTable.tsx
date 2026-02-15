@@ -30,6 +30,8 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 
 import { useAuth } from './AuthProvider';
 import { useRouter } from 'next/navigation';
+import { db } from '@/lib/firebase';
+import { collection, doc, setDoc, getDocs, query } from 'firebase/firestore';
 
 // ... (Lead Interface)
 
@@ -63,13 +65,15 @@ export default function LeadTable() {
         if (!user) return;
         setLoading(true);
         try {
-            const res = await fetch('/api/leads/saved');
-            const json = await res.json();
-            if (json.leads) {
-                setSavedLeads(json.leads);
-                // Also update the set for quick lookup
-                setSavedIds(new Set(json.leads.map((l: any) => l.ODS_Code)));
-            }
+            const q = query(collection(db, "users", user.uid, "leads"));
+            const querySnapshot = await getDocs(q);
+            const leads: Lead[] = [];
+            querySnapshot.forEach((doc) => {
+                leads.push(doc.data() as Lead);
+            });
+
+            setSavedLeads(leads);
+            setSavedIds(new Set(leads.map(l => l.ODS_Code)));
         } catch (e) {
             console.error(e);
         } finally {
@@ -128,13 +132,17 @@ export default function LeadTable() {
     }, [roleFilter, searchTerm, cityTerm]);
 
     const saveLead = async (lead: Lead) => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
         try {
-            await fetch('/api/leads/saved', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lead })
+            await setDoc(doc(db, "users", user.uid, "leads", lead.ODS_Code), {
+                ...lead,
+                SavedAt: new Date().toISOString()
             });
             setSavedIds(prev => new Set(prev).add(lead.ODS_Code));
+            // Update the local list if we are viewing it? No need, it's separate.
         } catch (err) {
             console.error("Failed to save", err);
         }

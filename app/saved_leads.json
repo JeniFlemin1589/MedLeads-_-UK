@@ -30,5 +30,37 @@
     "PhoneNumber": "0300 3309444",
     "Email": "",
     "FullAddress": "COBBETT HOUSE, OXFORD ROAD, MANCHESTER"
+  },
+  {
+    "Name": "GALEXA PHARMACY",
+    "ODS_Code": "FA019",
+    "Status": "Active",
+    "Address": "",
+    "City": "",
+    "Postcode": "NG15 7DR",
+    "Country": "UK",
+    "Role": "PHARMACY",
+    "Type": "Pharmacy",
+    "SavedAt": "2026-02-15T20:31:04.748Z",
+    "Website": "",
+    "PhoneNumber": "01159 638700",
+    "Email": "",
+    "FullAddress": "61 ANNESLEY ROAD, HUCKNALL, NOTTINGHAM"
+  },
+  {
+    "Name": "GRENDON PHARMACY",
+    "ODS_Code": "FA026",
+    "Status": "Active",
+    "Address": "",
+    "City": "",
+    "Postcode": "CV9 2EW",
+    "Country": "UK",
+    "Role": "PHARMACY",
+    "Type": "Pharmacy",
+    "SavedAt": "2026-02-15T20:31:45.110Z",
+    "Website": "",
+    "PhoneNumber": "",
+    "Email": "",
+    "FullAddress": "150 BOOT HILL, GRENDON, ATHERSTONE, WARWICKSHIRE"
   }
 ]

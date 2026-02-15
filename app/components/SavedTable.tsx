@@ -6,6 +6,8 @@ import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
+import { db } from '@/lib/firebase';
+import { collection, deleteDoc, doc, getDocs, query, setDoc } from 'firebase/firestore';
 
 interface Lead {
     Name: string;
@@ -29,30 +31,42 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 }
 
 export default function SavedTable() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+
     const [data, setData] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(false);
     const [enriching, setEnriching] = useState<string[]>([]);
 
     const fetchSaved = async () => {
+        if (!user) return;
         setLoading(true);
         try {
-            const res = await fetch('/api/leads/saved');
-            const json = await res.json();
-            if (json.leads) setData(json.leads.reverse()); // Show newest first
+            const q = query(collection(db, "users", user.uid, "leads"));
+            const querySnapshot = await getDocs(q);
+            const leads: Lead[] = [];
+            querySnapshot.forEach((doc) => {
+                leads.push(doc.data() as Lead);
+            });
+            setData(leads.reverse()); // Show newest first (client side sort might be needed if not using orderBy)
+            // Ideally use orderBy("SavedAt", "desc") but requires index. Let's sort manually.
+            leads.sort((a, b) => new Date(b.SavedAt || 0).getTime() - new Date(a.SavedAt || 0).getTime());
+            setData(leads);
         } catch (err) {
-            console.error("Failed to load saved leads");
+            console.error("Failed to load saved leads", err);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchSaved();
-    }, []);
+        if (user) fetchSaved();
+    }, [user]);
 
     const handleRemove = async (odsCode: string) => {
+        if (!user) return;
         try {
-            await fetch(`/api/leads/saved?odsCode=${odsCode}`, { method: 'DELETE' });
+            await deleteDoc(doc(db, "users", user.uid, "leads", odsCode));
             setData(prev => prev.filter(l => l.ODS_Code !== odsCode));
         } catch (err) {
             console.error("Failed to delete", err);
@@ -81,11 +95,9 @@ export default function SavedTable() {
                 };
 
                 // Save back to storage
-                await fetch('/api/leads/saved', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ lead: updatedLead })
-                });
+                if (user) {
+                    await setDoc(doc(db, "users", user.uid, "leads", lead.ODS_Code), updatedLead);
+                }
 
                 setData(prev => prev.map(l => l.ODS_Code === lead.ODS_Code ? updatedLead : l));
             }
@@ -119,8 +131,7 @@ export default function SavedTable() {
 
     if (loading && data.length === 0) return <div className="text-slate-400 p-8 text-center">Loading records...</div>;
 
-    const { user, loading: authLoading } = useAuth();
-    const router = useRouter();
+
 
     if (authLoading) return null; // Or a spinner
 
