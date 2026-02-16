@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, AlertCircle, ArrowRight, Github } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,14 +20,30 @@ export default function LoginPage() {
     setError('');
 
     try {
+      let result;
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        result = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        result = await supabase.auth.signUp({
+          email,
+          password,
+        });
       }
+
+      if (result.error) throw result.error;
+
+      // If signup, check if session is created immediately or magic link sent
+      if (!isLogin && !result.data.session) {
+        setError('Please check your email for the confirmation link.');
+        return;
+      }
+
       router.push('/');
     } catch (err: any) {
-      setError(err.message.replace('Firebase: ', ''));
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -36,8 +51,13 @@ export default function LoginPage() {
 
   const handleGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
-      router.push('/');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback` // Requires setting up valid redirect URI in Supabase
+        }
+      });
+      if (error) throw error;
     } catch (err: any) {
       setError(err.message);
     }

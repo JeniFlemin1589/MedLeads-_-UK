@@ -5,9 +5,9 @@ import { Download, Phone, Zap, Mail, Trash2, CheckCircle, Smartphone, MapPin, Lo
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useAuth } from '@/components/AuthProvider';
+import { useToast } from '@/components/ToastProvider';
 import { useRouter } from 'next/navigation';
-import { db } from '@/lib/firebase';
-import { collection, deleteDoc, doc, getDocs, query, setDoc } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
 
 interface Lead {
     Name: string;
@@ -33,6 +33,7 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 export default function SavedTable() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
 
     const [data, setData] = useState<Lead[]>([]);
     const [loading, setLoading] = useState(false);
@@ -42,18 +43,34 @@ export default function SavedTable() {
         if (!user) return;
         setLoading(true);
         try {
-            const q = query(collection(db, "users", user.uid, "leads"));
-            const querySnapshot = await getDocs(q);
-            const leads: Lead[] = [];
-            querySnapshot.forEach((doc) => {
-                leads.push(doc.data() as Lead);
+            const { data: leadsData, error } = await supabase
+                .from('leads')
+                .select('*')
+                .eq('user_id', user.uid)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Map back to Lead interface. We stored full object in json_data
+            // Or prefer manual mapping if schema matches.
+            // Let's use json_data combined with enriched fields if they exist in columns
+            const leads: Lead[] = leadsData.map((row: any) => {
+                // If we updated row columns (phone, etc), prioritize those
+                const original = row.json_data || {};
+                return {
+                    ...original,
+                    PhoneNumber: row.phone_number || original.PhoneNumber,
+                    Email: row.email || original.Email,
+                    Website: row.website || original.Website,
+                    FullAddress: row.full_address || original.FullAddress,
+                    SavedAt: row.created_at
+                };
             });
-            setData(leads.reverse()); // Show newest first (client side sort might be needed if not using orderBy)
-            // Ideally use orderBy("SavedAt", "desc") but requires index. Let's sort manually.
-            leads.sort((a, b) => new Date(b.SavedAt || 0).getTime() - new Date(a.SavedAt || 0).getTime());
+
             setData(leads);
         } catch (err) {
             console.error("Failed to load saved leads", err);
+            toast("Failed to load leads", "error");
         } finally {
             setLoading(false);
         }
@@ -66,10 +83,19 @@ export default function SavedTable() {
     const handleRemove = async (odsCode: string) => {
         if (!user) return;
         try {
-            await deleteDoc(doc(db, "users", user.uid, "leads", odsCode));
+            const { error } = await supabase
+                .from('leads')
+                .delete()
+                .eq('user_id', user.uid)
+                .eq('ods_code', odsCode);
+
+            if (error) throw error;
+
             setData(prev => prev.filter(l => l.ODS_Code !== odsCode));
+            toast("Lead removed", "success");
         } catch (err) {
             console.error("Failed to delete", err);
+            toast("Failed to remove lead", "error");
         }
     };
 
@@ -94,9 +120,18 @@ export default function SavedTable() {
                     FullAddress: result.enriched.fullAddress
                 };
 
-                // Save back to storage
+                // Save back to storage (Update specific columns)
                 if (user) {
-                    await setDoc(doc(db, "users", user.uid, "leads", lead.ODS_Code), updatedLead);
+                    await supabase.from('leads').update({
+                        phone_number: result.enriched.phoneNumber,
+                        email: result.enriched.email,
+                        website: result.enriched.website,
+                        full_address: result.enriched.fullAddress,
+                        // Update json_data too to keep it consistent
+                        json_data: updatedLead
+                    })
+                        .eq('user_id', user.uid)
+                        .eq('ods_code', lead.ODS_Code);
                 }
 
                 setData(prev => prev.map(l => l.ODS_Code === lead.ODS_Code ? updatedLead : l));
@@ -110,11 +145,22 @@ export default function SavedTable() {
 
     const enrichAll = async () => {
         const toEnrich = data.filter(l => !l.PhoneNumber);
-        for (const lead of toEnrich) {
-            await enrichLead(lead);
-            // Small delay to be nice to the API
-            await new Promise(r => setTimeout(r, 100));
+
+        if (toEnrich.length === 0) {
+            toast("All leads are already enriched!", "info");
+            return;
         }
+
+        toast(`Enriching ${toEnrich.length} leads...`, "info");
+
+        // Process in chunks of 5 to avoid overwhelming the API/Browser
+        const chunkSize = 5;
+        for (let i = 0; i < toEnrich.length; i += chunkSize) {
+            const chunk = toEnrich.slice(i, i + chunkSize);
+            await Promise.all(chunk.map(lead => enrichLead(lead)));
+        }
+
+        toast("Enrichment complete!", "success");
     };
 
     const handleExport = () => {

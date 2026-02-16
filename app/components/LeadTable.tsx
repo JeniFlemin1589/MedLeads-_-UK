@@ -30,14 +30,15 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 
 import { useAuth } from './AuthProvider';
 import { useRouter } from 'next/navigation';
-import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, getDocs, query } from 'firebase/firestore';
+import { supabase } from '@/lib/supabase';
+import { useToast } from './ToastProvider';
 
 // ... (Lead Interface)
 
 export default function LeadTable() {
     const { user } = useAuth();
     const router = useRouter();
+    const { toast } = useToast();
 
     const [activeTab, setActiveTab] = useState<'live' | 'saved'>('live');
     const [data, setData] = useState<Lead[]>([]);
@@ -65,15 +66,16 @@ export default function LeadTable() {
         if (!user) return;
         setLoading(true);
         try {
-            const q = query(collection(db, "users", user.uid, "leads"));
-            const querySnapshot = await getDocs(q);
-            const leads: Lead[] = [];
-            querySnapshot.forEach((doc) => {
-                leads.push(doc.data() as Lead);
-            });
+            const { data, error } = await supabase
+                .from('leads')
+                .select('ods_code')
+                .eq('user_id', user.uid); // Firebase UID
 
-            setSavedLeads(leads);
-            setSavedIds(new Set(leads.map(l => l.ODS_Code)));
+            if (error) throw error;
+
+            if (data) {
+                setSavedIds(new Set(data.map((l: any) => l.ods_code)));
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -137,14 +139,29 @@ export default function LeadTable() {
             return;
         }
         try {
-            await setDoc(doc(db, "users", user.uid, "leads", lead.ODS_Code), {
-                ...lead,
-                SavedAt: new Date().toISOString()
+            const { error } = await supabase.from('leads').insert({
+                user_id: user.uid, // Firebase UID
+                ods_code: lead.ODS_Code,
+                name: lead.Name,
+                status: lead.Status,
+                city: lead.City,
+                postcode: lead.Postcode,
+                json_data: lead // Storing full object mostly for retrieval convenience
             });
+
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    toast("Lead already saved!", "info");
+                    return;
+                }
+                throw error;
+            }
+
             setSavedIds(prev => new Set(prev).add(lead.ODS_Code));
-            // Update the local list if we are viewing it? No need, it's separate.
+            toast(`Saved ${lead.Name}`, 'success');
         } catch (err) {
             console.error("Failed to save", err);
+            toast("Failed to save lead", 'error');
         }
     };
 
