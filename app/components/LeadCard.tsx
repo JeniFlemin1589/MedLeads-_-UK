@@ -14,10 +14,11 @@ interface Lead {
     Postcode: string;
     Country: string;
     Role: string;
-    Type: 'Pharmacy' | 'Clinic' | 'Hospital';
+    Type: string;
     Website?: string;
     PhoneNumber?: string;
     Email?: string;
+    OverallRating?: string;
 }
 
 interface LeadCardProps {
@@ -40,15 +41,27 @@ export default function LeadCard({ lead, onEnrich, onSave, isSaved, isEnriched }
                 "absolute top-4 right-4 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
                 lead.Type === 'Pharmacy' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
                     lead.Type === 'Hospital' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
-                        "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                        lead.Type === 'Private Clinic' ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                            "bg-purple-500/10 text-purple-400 border-purple-500/20"
             )}>
                 {lead.Type}
             </div>
 
-            <div className="mb-4 pr-16 h-12">
+            <div className="mb-4 pr-16 h-14">
                 <h3 className="text-lg font-bold text-slate-100 leading-tight line-clamp-2" title={lead.Name}>
                     {lead.Name}
                 </h3>
+                {lead.OverallRating && (
+                    <span className={clsx(
+                        "inline-block mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border",
+                        lead.OverallRating === 'Outstanding' ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" :
+                            lead.OverallRating === 'Good' ? "bg-blue-500/20 text-blue-300 border-blue-500/30" :
+                                lead.OverallRating === 'Requires improvement' ? "bg-amber-500/20 text-amber-300 border-amber-500/30" :
+                                    "bg-red-500/20 text-red-300 border-red-500/30"
+                    )}>
+                        CQC: {lead.OverallRating}
+                    </span>
+                )}
             </div>
 
             <div className="space-y-3 mb-6">

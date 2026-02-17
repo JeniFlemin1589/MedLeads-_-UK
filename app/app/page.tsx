@@ -22,10 +22,10 @@ export default function Home() {
                 Beta v2.0
               </div>
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-                NHS Lead Generator
+                Med Leads GenX
               </h1>
               <p className="text-slate-400 max-w-2xl text-lg mt-2">
-                Official NHS ODS Integration with Free Data Enrichment.
+                NHS & Private Clinic Intelligence — Powered by ODS & CQC Data.
               </p>
             </div>
 

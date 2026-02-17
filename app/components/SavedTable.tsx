@@ -41,6 +41,13 @@ export default function SavedTable() {
 
     const fetchSaved = async () => {
         if (!user) return;
+
+        // Check if Supabase is configured
+        if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+            toast("Supabase not configured. Add SUPABASE_URL to .env.local", "info");
+            return;
+        }
+
         setLoading(true);
         try {
             const { data: leadsData, error } = await supabase
@@ -257,10 +264,10 @@ export default function SavedTable() {
                                             ) : (
                                                 <div className="text-xs text-slate-600 italic">No phone</div>
                                             )}
-                                            {lead.FullAddress && (
+                                            {(lead.FullAddress || lead.Address) && (
                                                 <div className="flex items-start gap-2 text-xs text-slate-400">
                                                     <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
-                                                    <span className="max-w-[200px]">{lead.FullAddress}</span>
+                                                    <span className="max-w-[200px]">{lead.FullAddress || [lead.Address, lead.City, lead.Postcode].filter(Boolean).join(', ')}</span>
                                                 </div>
                                             )}
                                         </div>
