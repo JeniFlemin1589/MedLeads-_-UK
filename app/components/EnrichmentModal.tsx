@@ -403,6 +403,51 @@ export default function EnrichmentModal({ isOpen, onClose, lead, loading, onSave
                                     )}
                                 </div>
 
+                                {/* ================================================================ */}
+                                {/* PATIENT REVIEW LINKS SECTION */}
+                                {/* ================================================================ */}
+                                <div className="border-t border-white/10 pt-4 mt-4">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="p-1.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
+                                            <ExternalLink className="h-4 w-4 text-white" />
+                                        </div>
+                                        <span className="text-sm font-bold text-white uppercase tracking-wider">Patient Reviews</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {/* Trustpilot Link */}
+                                        <a
+                                            href={`https://www.trustpilot.com/search?query=${encodeURIComponent(lead.Name)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 bg-[#00b67a]/10 hover:bg-[#00b67a]/20 border border-[#00b67a]/20 rounded-xl transition-all group cursor-pointer"
+                                        >
+                                            <div className="p-2 bg-[#00b67a]/20 rounded-lg group-hover:bg-[#00b67a]/30 transition-colors">
+                                                <Star className="h-4 w-4 text-[#00b67a]" />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-bold text-[#00b67a]">Trustpilot</div>
+                                                <div className="text-[10px] text-slate-500">View Reviews →</div>
+                                            </div>
+                                        </a>
+
+                                        {/* Google Maps Link */}
+                                        <a
+                                            href={`https://www.google.com/maps/search/${encodeURIComponent(lead.Name + ' ' + (lead.Postcode || ''))}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl transition-all group cursor-pointer"
+                                        >
+                                            <div className="p-2 bg-blue-500/20 rounded-lg group-hover:bg-blue-500/30 transition-colors">
+                                                <MapPin className="h-4 w-4 text-blue-400" />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-bold text-blue-400">Google Maps</div>
+                                                <div className="text-[10px] text-slate-500">View Location →</div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+
                                 {/* ICB Info */}
                                 {lead.IcbName && (
                                     <div className="text-[10px] text-slate-600 text-center pt-2">

@@ -3,11 +3,30 @@ import { NextRequest, NextResponse } from 'next/server';
 const CQC_API_URL = "https://api.service.cqc.org.uk/public/v1";
 const API_KEY = process.env.CQC_API_KEY;
 
+// Service category → CQC API filter parameters
+// These use official CQC API structured filters (directorate & serviceType)
+const SERVICE_FILTERS: Record<string, { directorate?: string; serviceType?: string }> = {
+    'all': { serviceType: 'Doctors consultation service' },
+    'gp': { serviceType: 'Doctors consultation service' },
+    'dental': { serviceType: 'Dental service' },
+    'pharmacy': { directorate: 'Primary medical services' },
+    'mental-health': { directorate: 'Hospitals' },
+    'surgery': { directorate: 'Hospitals' },
+    'diagnostics': { directorate: 'Hospitals' },
+    'homecare': { directorate: 'Adult social care' },
+    'nursing': { directorate: 'Adult social care' },
+    'hospice': { directorate: 'Adult social care' },
+    'rehabilitation': { directorate: 'Hospitals' },
+    'urgent-care': { directorate: 'Primary medical services' },
+    'ambulance': { directorate: 'Primary medical services' },
+};
+
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get('limit') || '20', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
     const page = Math.floor(offset / limit) + 1;
+    const service = searchParams.get('service') || 'all';
 
     if (!API_KEY) {
         return NextResponse.json({ error: 'CQC API Key missing. Add CQC_API_KEY to .env.local' }, { status: 500 });
@@ -19,12 +38,15 @@ export async function GET(request: NextRequest) {
             'Accept': 'application/json'
         };
 
-        // 1. Fetch location list
+        // 1. Fetch location list — use appropriate CQC filter
+        const filter = SERVICE_FILTERS[service] || SERVICE_FILTERS['all'];
         const params = new URLSearchParams({
             perPage: limit.toString(),
             page: page.toString(),
-            gacServiceTypeDescription: "Doctors consultation service"
         });
+
+        if (filter.serviceType) params.set('gacServiceTypeDescription', filter.serviceType);
+        if (filter.directorate) params.set('inspectionDirectorate', filter.directorate);
 
         const res = await fetch(`${CQC_API_URL}/locations?${params}`, { headers });
 
@@ -51,15 +73,25 @@ export async function GET(request: NextRequest) {
         const detailsRaw = await Promise.all(detailPromises);
         const details = detailsRaw.filter((d): d is any => d !== null);
 
-        // 3. Filter for Registered Private clinics only
-        const privateDetails = details.filter((d: any) => {
+        // 3. Filter for Registered locations
+        // When a specific service is selected, include all registered CQC locations for that service
+        // When 'all' is selected, restrict to private/independent providers only
+        const filteredDetails = details.filter((d: any) => {
             const isRegistered = d.registrationStatus === 'Registered';
-            const isPrivate = d.type === 'Independent Healthcare Org' || d.type === 'Independent Hospital';
-            return isRegistered && isPrivate;
+            if (!isRegistered) return false;
+
+
+
+            if (service === 'all' || service === 'gp') {
+                const isPrivate = d.type === 'Independent Healthcare Org' || d.type === 'Independent Hospital';
+                return isPrivate;
+            }
+            // For specific service types (dental, pharmacy, etc.), show all registered locations
+            return true;
         });
 
         // 4. Transform to rich Lead format
-        const leads = privateDetails.map((org: any) => {
+        const leads = filteredDetails.map((org: any) => {
             // Extract manager/contact info from regulated activities
             const contacts = (org.regulatedActivities || []).flatMap((act: any) =>
                 (act.contacts || []).map((c: any) => ({

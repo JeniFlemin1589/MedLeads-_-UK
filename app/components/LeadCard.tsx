@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Phone, MapPin, Building2, Globe, MoreHorizontal, Save, Zap, Check } from 'lucide-react';
+import { Phone, MapPin, Building2, Globe, MoreHorizontal, Save, Zap, Check, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 
@@ -19,6 +19,7 @@ interface Lead {
     PhoneNumber?: string;
     Email?: string;
     OverallRating?: string;
+    ServiceTypes?: string[];
 }
 
 interface LeadCardProps {
@@ -71,6 +72,18 @@ export default function LeadCard({ lead, onEnrich, onSave, isSaved, isEnriched }
                         {[lead.Address, lead.City, lead.Postcode].filter(Boolean).join(', ')}
                     </span>
                 </div>
+
+                {/* Service Tags */}
+                {lead.ServiceTypes && lead.ServiceTypes.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-1">
+                        {lead.ServiceTypes.slice(0, 2).map((svc, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-[9px] font-semibold">
+                                <Tag className="h-2.5 w-2.5" />
+                                {svc.length > 25 ? svc.slice(0, 25) + '...' : svc}
+                            </span>
+                        ))}
+                    </div>
+                )}
 
                 {lead.PhoneNumber && (
                     <div className="flex items-center gap-3 text-sm text-emerald-400">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, MapPin, Building2, Activity, Hospital, Filter, X, Globe, Lock } from 'lucide-react';
+import { Search, MapPin, Building2, Activity, Hospital, Filter, X, Globe, Lock, Stethoscope, Database } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LeadCard from './LeadCard';
 import EnrichmentModal from './EnrichmentModal';
@@ -72,7 +72,10 @@ export default function LeadTable() {
     const [londonOnly, setLondonOnly] = useState(false);
     const [regionTerm, setRegionTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState<'Pharmacy' | 'Clinic' | 'Hospital'>('Pharmacy');
-    const [dataType, setDataType] = useState<'NHS' | 'Private'>('NHS');
+    const [dataType, setDataType] = useState<'NHS' | 'Private' | 'Scraped'>('NHS');
+    const [serviceFilter, setServiceFilter] = useState('all');
+    const [scrapedSource, setScrapedSource] = useState('all');
+    const [scrapedCategory, setScrapedCategory] = useState('all');
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
@@ -120,10 +123,20 @@ export default function LeadTable() {
 
             let url = '';
 
-            if (dataType === 'Private') {
+            if (dataType === 'Scraped') {
                 const params = new URLSearchParams({
                     limit: limit.toString(),
                     offset: currentOffset.toString(),
+                    source: scrapedSource,
+                    category: scrapedCategory,
+                    search: searchTerm,
+                });
+                url = `/api/leads/scraped?${params.toString()}`;
+            } else if (dataType === 'Private') {
+                const params = new URLSearchParams({
+                    limit: limit.toString(),
+                    offset: currentOffset.toString(),
+                    service: serviceFilter,
                 });
                 url = `/api/leads/private?${params.toString()}`;
             } else {
@@ -156,7 +169,7 @@ export default function LeadTable() {
         } finally {
             setLoading(false);
         }
-    }, [roleFilter, searchTerm, cityTerm, offset, dataType]);
+    }, [roleFilter, searchTerm, cityTerm, offset, dataType, serviceFilter, scrapedSource, scrapedCategory]);
 
     // Debounce search
     useEffect(() => {
@@ -165,7 +178,7 @@ export default function LeadTable() {
             fetchLeads(true);
         }, 500);
         return () => clearTimeout(timer);
-    }, [roleFilter, searchTerm, cityTerm, dataType]);
+    }, [roleFilter, searchTerm, cityTerm, dataType, serviceFilter, scrapedSource, scrapedCategory]);
 
     const saveLead = async (lead: Lead) => {
         if (!user) {
@@ -302,17 +315,37 @@ export default function LeadTable() {
                                     <Lock className="h-4 w-4" />
                                     Private Sector
                                 </button>
+                                <button
+                                    onClick={() => setDataType('Scraped')}
+                                    className={cn(
+                                        "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+                                        dataType === 'Scraped'
+                                            ? "bg-purple-500 text-white shadow-lg shadow-purple-500/20"
+                                            : "text-slate-400 hover:text-white"
+                                    )}
+                                >
+                                    <Database className="h-4 w-4" />
+                                    Scraped Data
+                                </button>
                             </div>
                         </div>
 
-                        {/* Main Search - Only for NHS for now as Private API is simple */}
-                        {dataType === 'NHS' && (
+                        {/* Main Search - NHS and Scraped */}
+                        {(dataType === 'NHS' || dataType === 'Scraped') && (
                             <div className="md:col-span-5 relative group">
-                                <div className="w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500/50 transition-all">
-                                    <Search className="h-5 w-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors flex-shrink-0 mr-3" />
+                                <div className={cn(
+                                    "w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 transition-all",
+                                    dataType === 'Scraped'
+                                        ? "focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50"
+                                        : "focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500/50"
+                                )}>
+                                    <Search className={cn(
+                                        "h-5 w-5 transition-colors flex-shrink-0 mr-3",
+                                        dataType === 'Scraped' ? "text-purple-400" : "text-slate-400 group-focus-within:text-emerald-500"
+                                    )} />
                                     <input
                                         type="text"
-                                        placeholder="Search Organisation Name..."
+                                        placeholder={dataType === 'Scraped' ? "Search clinic name..." : "Search Organisation Name..."}
                                         className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-0 font-medium h-full"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -321,8 +354,12 @@ export default function LeadTable() {
                             </div>
                         )}
 
-                        {/* City Search */}
-                        <div className={cn(dataType === 'NHS' ? "md:col-span-3" : "md:col-span-12", "relative group")}>
+                        {/* Filter Controls - depends on data type */}
+                        <div className={cn(
+                            dataType === 'NHS' ? "md:col-span-3" : "md:col-span-12",
+                            (dataType === 'NHS' || dataType === 'Scraped') && "md:col-span-3",
+                            "relative group"
+                        )}>
                             {dataType === 'NHS' ? (
                                 <div className="w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all">
                                     <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors flex-shrink-0 mr-3" />
@@ -337,9 +374,68 @@ export default function LeadTable() {
                                         }}
                                     />
                                 </div>
+                            ) : dataType === 'Scraped' ? (
+                                <div className="flex gap-3 w-full">
+                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                        <Database className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
+                                        <select
+                                            value={scrapedSource}
+                                            onChange={(e) => { setScrapedSource(e.target.value); setOffset(0); }}
+                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                        >
+                                            <option value="all" className="bg-slate-900">All Sources</option>
+                                            <option value="doctify" className="bg-slate-900">🔵 Doctify</option>
+                                            <option value="goprivate" className="bg-slate-900">🟢 GoPrivate</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                        <Filter className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
+                                        <select
+                                            value={scrapedCategory}
+                                            onChange={(e) => { setScrapedCategory(e.target.value); setOffset(0); }}
+                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                        >
+                                            <option value="all" className="bg-slate-900">All Categories</option>
+                                            <option value="weight-loss" className="bg-slate-900">⚖️ Weight Loss</option>
+                                            <option value="hair-loss" className="bg-slate-900">💇 Hair Loss</option>
+                                            <option value="cosmetic" className="bg-slate-900">✨ Cosmetic</option>
+                                            <option value="dental" className="bg-slate-900">🦷 Dental</option>
+                                            <option value="fertility" className="bg-slate-900">🤰 Fertility</option>
+                                            <option value="physiotherapy" className="bg-slate-900">🦴 Physiotherapy</option>
+                                            <option value="eye-care" className="bg-slate-900">👁️ Eye Care</option>
+                                            <option value="mental-health" className="bg-slate-900">🧠 Mental Health</option>
+                                            <option value="dermatology" className="bg-slate-900">🧴 Dermatology</option>
+                                            <option value="cardiology" className="bg-slate-900">❤️ Cardiology</option>
+                                            <option value="general" className="bg-slate-900">🏥 General</option>
+                                        </select>
+                                    </div>
+                                </div>
                             ) : (
-                                <div className="text-center text-slate-400 text-sm py-2">
-                                    Displaying Official Private Clinic Registry (CQC)
+                                <div className="w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-amber-500/50 focus-within:border-amber-500/50 transition-all">
+                                    <Stethoscope className="h-5 w-5 text-amber-400 flex-shrink-0 mr-3" />
+                                    <select
+                                        value={serviceFilter}
+                                        onChange={(e) => { setServiceFilter(e.target.value); setOffset(0); }}
+                                        className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                    >
+                                        <option value="all" className="bg-slate-900">All Services</option>
+                                        <optgroup label="── CQC Categories ──" className="bg-slate-900 text-slate-500">
+                                            <option value="gp" className="bg-slate-900">👨‍⚕️ GP / Doctors</option>
+                                            <option value="dental" className="bg-slate-900">🦷 Dental</option>
+                                            <option value="pharmacy" className="bg-slate-900">💊 Pharmacy</option>
+                                            <option value="mental-health" className="bg-slate-900">🧠 Mental Health</option>
+                                            <option value="surgery" className="bg-slate-900">🔧 Surgery</option>
+                                            <option value="diagnostics" className="bg-slate-900">🔬 Diagnostics</option>
+                                            <option value="homecare" className="bg-slate-900">🏠 Home Care</option>
+                                            <option value="nursing" className="bg-slate-900">🏥 Nursing Home</option>
+                                            <option value="hospice" className="bg-slate-900">🕊️ Hospice</option>
+                                            <option value="rehabilitation" className="bg-slate-900">♻️ Rehabilitation</option>
+                                            <option value="urgent-care" className="bg-slate-900">🚨 Urgent Care</option>
+                                            <option value="ambulance" className="bg-slate-900">🚑 Ambulance</option>
+                                        </optgroup>
+                                        <optgroup label="── Niche? Use Scraped Data tab ──" className="bg-slate-900 text-slate-500" disabled>
+                                        </optgroup>
+                                    </select>
                                 </div>
                             )}
                         </div>
