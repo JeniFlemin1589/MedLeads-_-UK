@@ -26,9 +26,17 @@ config({ path: resolve(__dirname, '../app/.env.local') });
 // ---- Config ----
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const SITEMAP_URL = 'https://www.doctify.com/sitemap.uk.practices.xml';
 const DELAY_MS = 3000; // 3 seconds between requests (polite)
 const MAX_RETRIES = 2;
+
+// Supported page types and their sitemaps
+const PAGE_TYPES: Record<string, { sitemap: string; urlPattern: RegExp; pathSegment: string }> = {
+    'practices': { sitemap: 'https://www.doctify.com/sitemap.uk.practices.xml', urlPattern: /doctify\.com\/uk\/practice\//, pathSegment: 'practice' },
+    'specialists': { sitemap: 'https://www.doctify.com/sitemap.uk.specialists.xml', urlPattern: /doctify\.com\/uk\/specialist\//, pathSegment: 'specialist' },
+    'hospitals': { sitemap: 'https://www.doctify.com/sitemap.uk.hospitals.xml', urlPattern: /doctify\.com\/uk\/hospital\//, pathSegment: 'hospital' },
+    'pharmacies': { sitemap: 'https://www.doctify.com/sitemap.uk.pharmacies.xml', urlPattern: /doctify\.com\/uk\/pharmacy\//, pathSegment: 'pharmacy' },
+    'carehomes': { sitemap: 'https://www.doctify.com/sitemap.uk.carehomes.xml', urlPattern: /doctify\.com\/uk\/care-home\//, pathSegment: 'care-home' },
+};
 
 // Lazy Supabase client — only created when needed (not during dry runs)
 let _supabase: SupabaseClient | null = null;
@@ -48,9 +56,20 @@ function getSupabase(): SupabaseClient {
 const args = process.argv.slice(2);
 const limitArg = args.indexOf('--limit');
 const categoryArg = args.indexOf('--category');
+const typeArg = args.indexOf('--type');
 const dryRun = args.includes('--dry-run');
 const LIMIT = limitArg !== -1 ? parseInt(args[limitArg + 1]) : Infinity;
 const CATEGORY_FILTER = categoryArg !== -1 ? args[categoryArg + 1].toLowerCase() : '';
+const PAGE_TYPE = typeArg !== -1 ? args[typeArg + 1].toLowerCase() : 'practices';
+
+if (!PAGE_TYPES[PAGE_TYPE]) {
+    console.error(`❌ Unknown type "${PAGE_TYPE}". Valid types: ${Object.keys(PAGE_TYPES).join(', ')}`);
+    process.exit(1);
+}
+
+const SITEMAP_URL = PAGE_TYPES[PAGE_TYPE].sitemap;
+const URL_PATTERN = PAGE_TYPES[PAGE_TYPE].urlPattern;
+const PATH_SEGMENT = PAGE_TYPES[PAGE_TYPE].pathSegment;
 
 // ---- Types ----
 interface ScrapedPractice {
@@ -104,11 +123,13 @@ async function fetchSitemapUrls(page: Page): Promise<string[]> {
         const xml = await response.text();
         console.log(`📄 Raw XML length: ${xml.length}`);
 
-        // Extract URLs from XML sitemap
-        const urlMatches = xml.match(/<loc>(https:\/\/www\.doctify\.com\/uk\/practice\/[^<]+)<\/loc>/g) || [];
-        let urls = urlMatches.map(m => m.replace(/<\/?loc>/g, ''));
+        // Extract URLs matching the selected type
+        const allUrlMatches = xml.match(/<loc>(https:\/\/www\.doctify\.com\/uk\/[^<]+)<\/loc>/g) || [];
+        let urls = allUrlMatches
+            .map(m => m.replace(/<\/?loc>/g, ''))
+            .filter(url => URL_PATTERN.test(url));
 
-        console.log(`📋 Found ${urls.length} practice URLs in sitemap`);
+        console.log(`📋 Found ${urls.length} ${PAGE_TYPE} URLs in sitemap`);
 
         // Filter by category keyword if specified
         if (CATEGORY_FILTER) {
@@ -121,9 +142,9 @@ async function fetchSitemapUrls(page: Page): Promise<string[]> {
         console.error(`❌ Failed to fetch sitemap: ${e.message}`);
         // Fallback: try parsing the rendered page content
         const content = await page.content();
-        const urlMatches = content.match(/https:\/\/www\.doctify\.com\/uk\/practice\/[^"<\s]+/g) || [];
+        const urlMatches = content.match(new RegExp(`https://www\\.doctify\\.com/uk/${PATH_SEGMENT}/[^"<\\s]+`, 'g')) || [];
         const urls = [...new Set(urlMatches)];
-        console.log(`📋 Fallback: Found ${urls.length} practice URLs from page content`);
+        console.log(`📋 Fallback: Found ${urls.length} ${PAGE_TYPE} URLs from page content`);
         return urls.slice(0, LIMIT);
     }
 }
@@ -322,7 +343,8 @@ async function storeLead(lead: ScrapedPractice): Promise<boolean> {
 
 // ---- Main ----
 async function main() {
-    console.log('🚀 Doctify Practice Scraper');
+    console.log('🚀 Doctify Scraper');
+    console.log(`   Type: ${PAGE_TYPE}`);
     console.log(`   Limit: ${LIMIT === Infinity ? 'ALL' : LIMIT}`);
     console.log(`   Category: ${CATEGORY_FILTER || 'ALL'}`);
     console.log(`   Dry run: ${dryRun}\n`);

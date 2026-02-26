@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, MapPin, Building2, Activity, Hospital, Filter, X, Globe, Lock, Stethoscope, Database } from 'lucide-react';
 import { motion } from 'framer-motion';
 import LeadCard from './LeadCard';
@@ -77,6 +77,7 @@ export default function LeadTable() {
     const [scrapedSource, setScrapedSource] = useState('all');
     const [scrapedCategory, setScrapedCategory] = useState('all');
     const [offset, setOffset] = useState(0);
+    const offsetRef = useRef(0);
     const [hasMore, setHasMore] = useState(true);
     const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
@@ -119,13 +120,14 @@ export default function LeadTable() {
     const fetchLeads = useCallback(async (reset = false) => {
         setLoading(true);
         try {
-            const currentOffset = reset ? 0 : offset;
+            const currentOffset = reset ? 0 : offsetRef.current;
 
             let url = '';
+            const pageLimit = dataType === 'Scraped' ? 20 : limit;
 
             if (dataType === 'Scraped') {
                 const params = new URLSearchParams({
-                    limit: limit.toString(),
+                    limit: pageLimit.toString(),
                     offset: currentOffset.toString(),
                     source: scrapedSource,
                     category: scrapedCategory,
@@ -134,7 +136,7 @@ export default function LeadTable() {
                 url = `/api/leads/scraped?${params.toString()}`;
             } else if (dataType === 'Private') {
                 const params = new URLSearchParams({
-                    limit: limit.toString(),
+                    limit: pageLimit.toString(),
                     offset: currentOffset.toString(),
                     service: serviceFilter,
                 });
@@ -144,10 +146,9 @@ export default function LeadTable() {
                 if (roleFilter === 'Clinic') apiRole = 'RO172';
                 if (roleFilter === 'Hospital') apiRole = 'RO197';
 
-                // Build URL for NHS
                 const params = new URLSearchParams({
                     role: apiRole,
-                    limit: limit.toString(),
+                    limit: pageLimit.toString(),
                     offset: currentOffset.toString(),
                     search: searchTerm,
                     town: cityTerm,
@@ -160,25 +161,27 @@ export default function LeadTable() {
 
             if (json.leads) {
                 setData(prev => reset ? json.leads : [...prev, ...json.leads]);
-                setOffset(currentOffset + json.leads.length);
-                // For Private API, hasMore might depend on total or just if we got leads
-                setHasMore(json.hasMore !== undefined ? json.hasMore : (json.leads.length > 0 && json.leads.length === limit));
+                const newOffset = currentOffset + json.leads.length;
+                setOffset(newOffset);
+                offsetRef.current = newOffset;
+                setHasMore(json.hasMore !== undefined ? json.hasMore : (json.leads.length > 0 && json.leads.length === pageLimit));
             }
         } catch (err) {
             console.error("Failed to fetch leads:", err);
         } finally {
             setLoading(false);
         }
-    }, [roleFilter, searchTerm, cityTerm, offset, dataType, serviceFilter, scrapedSource, scrapedCategory]);
+    }, [roleFilter, searchTerm, cityTerm, dataType, serviceFilter, scrapedSource, scrapedCategory]);
 
-    // Debounce search
+    // Debounce search — reset pagination when filters change
     useEffect(() => {
         const timer = setTimeout(() => {
             setOffset(0);
+            offsetRef.current = 0;
             fetchLeads(true);
         }, 500);
         return () => clearTimeout(timer);
-    }, [roleFilter, searchTerm, cityTerm, dataType, serviceFilter, scrapedSource, scrapedCategory]);
+    }, [fetchLeads]);
 
     const saveLead = async (lead: Lead) => {
         if (!user) {
