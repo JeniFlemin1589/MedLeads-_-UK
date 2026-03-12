@@ -354,6 +354,7 @@ export default function LeadTable() {
                                         >
                                             <option value="all" className="bg-slate-900">Sources: All</option>
                                             <option value="doctify" className="bg-slate-900">🔵 Doctify</option>
+                                            <option value="ihpn" className="bg-slate-900">🟣 IHPN Members</option>
                                             <option value="goprivate" className="bg-slate-900">🟢 GoPrivate</option>
                                         </select>
                                     </div>
