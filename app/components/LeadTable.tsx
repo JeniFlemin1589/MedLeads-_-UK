@@ -302,7 +302,7 @@ export default function LeadTable() {
 
                         {/* Main Search - NHS and Scraped */}
                         {(dataType === 'NHS' || dataType === 'Scraped') && (
-                            <div className="md:col-span-5 relative group">
+                            <div className={cn("relative group", dataType === 'Scraped' ? "md:col-span-8" : "md:col-span-5")}>
                                 <div className={cn(
                                     "w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 transition-all",
                                     dataType === 'Scraped'
@@ -315,7 +315,7 @@ export default function LeadTable() {
                                     )} />
                                     <input
                                         type="text"
-                                        placeholder={dataType === 'Scraped' ? "Search clinic name..." : "Search Organisation Name..."}
+                                        placeholder={dataType === 'Scraped' ? "Search clinic or doctor name..." : "Search Organisation Name..."}
                                         className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-0 font-medium h-full"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -326,9 +326,8 @@ export default function LeadTable() {
 
                         {/* Filter Controls - depends on data type */}
                         <div className={cn(
-                            dataType === 'NHS' ? "md:col-span-3" : "md:col-span-12",
-                            (dataType === 'NHS' || dataType === 'Scraped') && "md:col-span-3",
-                            "relative group"
+                            "relative group",
+                            dataType === 'NHS' ? "md:col-span-3" : "md:col-span-12"
                         )}>
                             {dataType === 'NHS' ? (
                                 <div className="w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all">
@@ -345,25 +344,25 @@ export default function LeadTable() {
                                     />
                                 </div>
                             ) : dataType === 'Scraped' ? (
-                                <div className="flex gap-3 w-full">
-                                    <div className="flex-[0.5] h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                <div className="flex flex-col md:flex-row gap-4 w-full">
+                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
                                         <Database className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
                                         <select
                                             value={scrapedSource}
                                             onChange={(e) => { setScrapedSource(e.target.value); setOffset(0); }}
-                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none truncate"
                                         >
                                             <option value="all" className="bg-slate-900">Sources: All</option>
                                             <option value="doctify" className="bg-slate-900">🔵 Doctify</option>
                                             <option value="goprivate" className="bg-slate-900">🟢 GoPrivate</option>
                                         </select>
                                     </div>
-                                    <div className="flex-[0.7] h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
                                         <Building2 className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
                                         <select
                                             value={scrapedPageType}
                                             onChange={(e) => { setScrapedPageType(e.target.value); setOffset(0); }}
-                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none truncate"
                                         >
                                             <option value="all" className="bg-slate-900">Types: All</option>
                                             <option value="specialist" className="bg-slate-900">👨‍⚕️ Doctors</option>
@@ -373,12 +372,12 @@ export default function LeadTable() {
                                             <option value="carehome" className="bg-slate-900">🏠 Care Homes</option>
                                         </select>
                                     </div>
-                                    <div className="flex-[0.8] h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
                                         <Filter className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
                                         <select
                                             value={scrapedCategory}
                                             onChange={(e) => { setScrapedCategory(e.target.value); setOffset(0); }}
-                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none truncate"
                                         >
                                             <option value="all" className="bg-slate-900">Categories: All</option>
                                             <option value="weight-loss" className="bg-slate-900">⚖️ Weight Loss</option>
