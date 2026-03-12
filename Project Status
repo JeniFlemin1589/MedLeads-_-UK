@@ -1,0 +1,188 @@
+# MedLeads UK — Project Status Report
+
+> **Date**: March 3, 2026 &nbsp;|&nbsp; **Version**: Beta v2.0
+
+---
+
+## 🏗️ Architecture Overview
+
+```mermaid
+graph TB
+    subgraph Frontend ["Next.js 16 Frontend"]
+        LP[Login Page] --> AP[AuthProvider]
+        AP --> HOME[Dashboard]
+        HOME --> LT[LeadTable - Live Search]
+        HOME --> ST[SavedTable - Saved Records]
+        LT --> LC[LeadCard]
+        LT --> EM[EnrichmentModal]
+        HOME --> PP[Profile Page]
+    end
+
+    subgraph API ["API Routes"]
+        A1["/api/leads — NHS ODS"]
+        A2["/api/leads/enrich — ODS Details"]
+        A3["/api/leads/enrich/places — Google Places"]
+        A4["/api/leads/private — CQC Private Clinics"]
+        A5["/api/leads/scraped — Supabase Scraped Data"]
+    end
+
+    subgraph External ["External Services"]
+        NHS["NHS ODS API"]
+        CQC["CQC API"]
+        GP["Google Places API"]
+        FB["Firebase Auth"]
+        SB["Supabase DB"]
+    end
+
+    LT --> A1 --> NHS
+    LT --> A2 --> NHS
+    LT --> A3 --> GP
+    LT --> A4 --> CQC
+    LT --> A5 --> SB
+    AP --> FB
+    ST --> SB
+```
+
+---
+
+## ✅ What's Done (Completed Features)
+
+### 1. Authentication & User Management
+| Feature | Status | Details |
+|---|---|---|
+| Firebase Auth setup | ✅ Done | Project: `medleads-uk` |
+| Email/Password login | ✅ Done | Sign in + Sign up flow |
+| Google OAuth login | ✅ Done | Popup-based sign-in |
+| Auth state management | ✅ Done | `AuthProvider` context with `useAuth` hook |
+| Profile page | ✅ Done | Displays user avatar, email, UID, sign out |
+| Route protection | ✅ Done | Redirects unauthenticated users to `/login` |
+
+### 2. NHS ODS Lead Search (Live Search Tab)
+| Feature | Status | Details |
+|---|---|---|
+| ODS API integration | ✅ Done | [/api/leads/route.ts](file:///e:/10qbit/leads/app/app/api/leads/route.ts) |
+| Role-based filtering | ✅ Done | Pharmacies (RO182), Clinics (RO172), Hospitals (RO197) |
+| Name search | ✅ Done | Free-text search via ODS API |
+| Town/City filter | ✅ Done | Smart detection: postcode vs city name |
+| Postcode filter | ✅ Done | ODS PostCode parameter |
+| Pagination | ✅ Done | Offset-based with "Load More" |
+| Lead card display | ✅ Done | [LeadCard.tsx](file:///e:/10qbit/leads/app/components/LeadCard.tsx) — animated cards with type badges |
+
+### 3. Lead Enrichment
+| Feature | Status | Details |
+|---|---|---|
+| ODS detail enrichment | ✅ Done | [/api/leads/enrich](file:///e:/10qbit/leads/app/app/api/leads/enrich/route.ts) — phone, email, website, address |
+| Google Places enrichment | ✅ Done | [/api/leads/enrich/places](file:///e:/10qbit/leads/app/app/api/leads/enrich/places/route.ts) — rating, reviews, hours, photos |
+| Enrichment Modal | ✅ Done | [EnrichmentModal.tsx](file:///e:/10qbit/leads/app/components/EnrichmentModal.tsx) — 476-line rich detail view |
+| CQC ratings display | ✅ Done | Rating badges (Outstanding/Good/Requires improvement) |
+| Google star ratings | ✅ Done | Star component with review count |
+
+### 4. CQC Private Clinic Search
+| Feature | Status | Details |
+|---|---|---|
+| CQC API integration | ✅ Done | [/api/leads/private](file:///e:/10qbit/leads/app/app/api/leads/private/route.ts) |
+| Service category filters | ✅ Done | GP, Dental, Pharmacy, Mental Health, Surgery, Diagnostics, etc. |
+| Rich data extraction | ✅ Done | Contacts, regulated activities, specialisms, inspection reports, CQC ratings, ICB info |
+| Pagination | ✅ Done | Page-based with total count |
+
+### 5. Save & Export Leads
+| Feature | Status | Details |
+|---|---|---|
+| Save leads to Supabase | ✅ Done | Per-user saved leads (keyed by `user_id`) |
+| Saved Records tab | ✅ Done | [SavedTable.tsx](file:///e:/10qbit/leads/app/components/SavedTable.tsx) |
+| Remove saved leads | ✅ Done | Delete from Supabase |
+| Bulk enrich saved leads | ✅ Done | `enrichAll()` — enriches all un-enriched saved leads |
+| CSV Export | ✅ Done | `handleExport()` — downloads saved leads as CSV |
+| Toast notifications | ✅ Done | [ToastProvider.tsx](file:///e:/10qbit/leads/app/components/ToastProvider.tsx) |
+
+### 6. Web Scraping Pipeline
+| Feature | Status | Details |
+|---|---|---|
+| Doctify scraper | ✅ Done | [scrape-doctify.ts](file:///e:/10qbit/leads/scripts/scrape-doctify.ts) — 421 lines, Playwright-based |
+| Sitemap parsing | ✅ Done | Parses Doctify UK sitemaps for practices/specialists/clinics |
+| JSON-LD extraction | ✅ Done | Extracts structured data from practice pages |
+| Category inference | ✅ Done | Infers categories from URL/name (weight-loss, hair, dental, etc.) |
+| Supabase storage | ✅ Done | Stores scraped leads in `scraped_leads` table |
+| Scraped leads API | ✅ Done | [/api/leads/scraped](file:///e:/10qbit/leads/app/app/api/leads/scraped/route.ts) — filters by source/category |
+| DB schema | ✅ Done | [supabase-scraped-table.sql](file:///e:/10qbit/leads/scripts/supabase-scraped-table.sql) with RLS + indexes |
+| CLI options | ✅ Done | `--limit`, `--category`, `--type`, `--dry-run` flags |
+
+### 7. Data & Prototyping
+| Feature | Status | Details |
+|---|---|---|
+| Bulk CSV data | ✅ Done | `leads_pharmacies_uk.csv` (511 KB), `leads_clinics_uk.csv` (488 KB) |
+| Python fetch script | ✅ Done | [fetch_leads.py](file:///e:/10qbit/leads/prototype/fetch_leads.py) — bulk NHS ODS data collection |
+| Debug scripts | ✅ Done | 11 debug/prototype scripts for CQC, Google, NHS APIs |
+| Deployment guide | ✅ Done | [DEPLOY.md](file:///e:/10qbit/leads/DEPLOY.md) — Vercel + Netlify instructions |
+
+---
+
+## 🔧 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | **Next.js 16** (App Router) |
+| Language | **TypeScript** + **React 19** |
+| Styling | **Tailwind CSS 4** + `clsx` + `tailwind-merge` |
+| Animations | **Framer Motion** |
+| Icons | **Lucide React** |
+| Auth | **Firebase Auth** (Email + Google OAuth) |
+| Database | **Supabase** (PostgreSQL) |
+| CSV Parsing | **PapaParse** |
+| Scraping | **Playwright** + **tsx** |
+
+### Environment Variables Required
+| Key | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Client-side Google Maps (legacy, in `lib/google.ts`) |
+| `GOOGLE_PLACES_API_KEY` | Server-side Google Places API |
+| `CQC_API_KEY` | CQC API subscription key |
+| Firebase keys | Hardcoded in `lib/firebase.ts` |
+
+---
+
+## 🔲 What's NOT Done / Next Steps
+
+### High Priority
+| # | Task | Notes |
+|---|---|---|
+| 1 | **Scraped leads UI integration** | API exists (`/api/leads/scraped`) but the frontend `LeadTable` doesn't have a tab/mode to display scraped leads from Doctify |
+| 2 | **GoPrivate scraper** | The schema supports `goprivate` source, but no scraper script exists for it yet |
+| 3 | **Duplicate `Lead` interface** | The `Lead` interface is duplicated across 4 files — should be centralized into a shared types file |
+| 4 | **Firebase → Supabase auth migration** | Firebase is still used for auth while Supabase is used for data. Consider consolidating to Supabase Auth |
+| 5 | **API key security** | Firebase config is hardcoded in `lib/firebase.ts`. Google Places API key is exposed client-side in `lib/google.ts` (server-side route exists but both paths are active) |
+
+### Medium Priority
+| # | Task | Notes |
+|---|---|---|
+| 6 | **Error handling & loading states** | Some API errors lack user-friendly feedback |
+| 7 | **Responsive design polish** | Desktop-first — mobile experience could be improved |
+| 8 | **Rate limiting** | No rate limiting on API routes — could be abused |
+| 9 | **Vercel deployment** | DEPLOY.md exists but references old Firebase env vars; needs updating for Supabase vars |
+| 10 | **Search debouncing** | Live search could benefit from debounced input |
+
+### Low Priority / Nice-to-Have
+| # | Task | Notes |
+|---|---|---|
+| 11 | **Dashboard analytics** | No analytics/metrics page for lead generation stats |
+| 12 | **User roles & permissions** | No admin vs regular user distinction |
+| 13 | **Lead tagging/notes** | Users can't add custom tags or notes to saved leads |
+| 14 | **Email/SMS outreach** | No integration for contacting leads directly |
+| 15 | **Map view** | Lat/Lng data exists from CQC but no map visualization |
+
+---
+
+## 📊 Codebase Summary
+
+| Metric | Count |
+|---|---|
+| **Pages** | 3 (Home, Login, Profile) |
+| **Components** | 6 |
+| **API Routes** | 5 |
+| **Lib Modules** | 3 (Firebase, Supabase, Google) |
+| **Prototype Scripts** | 14 (Python) |
+| **Scraping Scripts** | 3 (TypeScript) |
+| **Data Sources** | 4 (NHS ODS, CQC, Google Places, Doctify) |
+| **Total App Lines** | ~2,000+ |
