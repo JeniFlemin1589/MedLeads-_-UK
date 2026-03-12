@@ -18,25 +18,47 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function scrapeIHPN() {
     console.log("🚀 Starting IHPN Member Scraper...");
     
-    // IHPN WPSL API Endpoint
-    // We use a large search radius & max results to get everything from the center of the UK
-    const url = 'https://www.ihpn.org.uk/wp-admin/admin-ajax.php?action=store_search&lat=54.2361&lng=-4.5481&max_results=5000&search_radius=1000&autoload=1';
-    
-    try {
-        console.log(`Fetching from: ${url}`);
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log(`✅ Found ${data.length} IHPN members.`);
+    // IHPN WPSL API Endpoint has a max limit of 150 per request.
+    // To get all 550+ we query across major UK coordinates.
+    const cities = [
+        { name: 'London', lat: 51.5074, lng: -0.1278 },
+        { name: 'Birmingham', lat: 52.4862, lng: -1.8904 },
+        { name: 'Manchester', lat: 53.4808, lng: -2.2426 },
+        { name: 'Leeds', lat: 53.8008, lng: -1.5491 },
+        { name: 'Glasgow', lat: 55.8642, lng: -4.2518 },
+        { name: 'Newcastle', lat: 54.9783, lng: -1.6178 },
+        { name: 'Bristol', lat: 51.4545, lng: -2.5879 },
+        { name: 'Edinburgh', lat: 55.9533, lng: -3.1883 },
+        { name: 'Belfast', lat: 54.5973, lng: -5.9301 },
+        { name: 'Cardiff', lat: 51.4816, lng: -3.1791 },
+        { name: 'Plymouth', lat: 50.3755, lng: -4.1427 },
+        { name: 'Norwich', lat: 52.6309, lng: 1.2974 },
+        { name: 'Inverness', lat: 57.4778, lng: -4.2247 }
+    ];
 
+    try {
         let insertedCount = 0;
         let skippedCount = 0;
+        const seenIds = new Set();
+        
+        for (const city of cities) {
+            console.log(`\nFetching near ${city.name}...`);
+            const url = `https://www.ihpn.org.uk/wp-admin/admin-ajax.php?action=store_search&lat=${city.lat}&lng=${city.lng}&max_results=500&search_radius=5000`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Failed to fetch ${city.name}: HTTP ${response.status}`);
+                continue;
+            }
+            
+            const data = await response.json();
+            console.log(`✅ Found ${data.length} IHPN members in ${city.name} region.`);
 
-        for (const member of data) {
+            for (const member of data) {
+                if (seenIds.has(member.id)) {
+                    continue; // Skip duplicates between regions
+                }
+                seenIds.add(member.id);
             const name = member.store.replace(/&#038;/g, '&').replace(/&#8211;/g, '-');
             const city = member.city;
             const postcode = member.zip;
@@ -86,8 +108,9 @@ async function scrapeIHPN() {
                 insertedCount++;
             }
         }
+        }
 
-        console.log(`\n🎉 IHPN Scrape Complete!`);
+        console.log(`\n🎉 Deep IHPN Scrape Complete!`);
         console.log(`📊 Inserted: ${insertedCount}`);
         console.log(`⏭️ Skipped (Duplicates): ${skippedCount}`);
         

@@ -43,8 +43,8 @@ async function scrapeNewmedica() {
     
     console.log(`Found ${urlsToScrape.length} useful URLs to scrape from sitemap.`);
     
-    // Limit to 200
-    const targetUrls = urlsToScrape.slice(0, 200);
+    // Remove limit to scrape ALL of them
+    const targetUrls = urlsToScrape;
     console.log(`Targeting ${targetUrls.length} URLs.`);
 
     const browser = await chromium.launch({ headless: true });
@@ -100,7 +100,43 @@ async function scrapeNewmedica() {
                 const texts = await page.locator('p').allTextContents();
                 const description = texts.join('\n').substring(0, 500).trim();
                 
-                // Phone numbers and addresses are usually in footer or header, let's look for standard patterns
+                // Extract Address
+                let addressParams = '';
+                try {
+                    addressParams = await page.locator('p.has-text-balanced').first().textContent() || '';
+                } catch(e) {}
+                const parts = addressParams.split(',').map(p => p.trim());
+                let city = '';
+                let postcode = '';
+                if (parts.length > 2) {
+                    postcode = parts[parts.length - 1];
+                    city = parts[parts.length - 2];
+                }
+
+                // Extract Doctors
+                const doctors: any[] = [];
+                const doctorCards = await page.locator('.box.is-consultant').all();
+                for (const card of doctorCards) {
+                    try {
+                        const href = await card.getAttribute('href');
+                        const name = await card.locator('h3').textContent();
+                        const title = await card.locator('p').first().textContent();
+                        // we need to get the img src which is lazy loaded so check both src and data-src
+                        let img = await card.locator('img').getAttribute('data-src');
+                        if (!img) img = await card.locator('img').getAttribute('src');
+                        
+                        if (name) {
+                            doctors.push({
+                                name: name?.trim(),
+                                title: title?.trim(),
+                                profileUrl: href?.startsWith('http') ? href : `https://www.newmedica.co.uk${href}`,
+                                imageUrl: img?.startsWith('data:image') ? null : img
+                            });
+                        }
+                    } catch(e) {}
+                }
+                
+                // Phone numbers
                 const bodyText = await page.textContent('body') || '';
                 const phoneMatch = bodyText.match(/0[0-9]{3} [0-9]{3} [0-9]{4}|0[0-9]{4} [0-9]{6}/);
                 const phone = phoneMatch ? phoneMatch[0] : null;
@@ -109,13 +145,18 @@ async function scrapeNewmedica() {
                     source: 'newmedica',
                     url: url,
                     name: cleanTitle,
+                    city: city || undefined,
+                    postcode: postcode || undefined,
+                    address: addressParams || undefined,
                     phone: phone,
                     description: description.substring(0, 1000), // Ensure it fits
                     categories: [category],
                     raw_data: {
                         pageType: pageType,
                         category: category,
-                        url: url
+                        url: url,
+                        fullAddress: addressParams || null,
+                        doctors: doctors
                     }
                 };
 
