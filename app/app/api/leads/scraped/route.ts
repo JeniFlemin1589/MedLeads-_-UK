@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0', 10);
     const source = searchParams.get('source') || 'all';     // doctify | goprivate | all
     const category = searchParams.get('category') || 'all';  // weight-loss | hair-loss | cosmetic | etc.
+    const pageType = searchParams.get('pageType') || 'all'; // specialists | practices | hospitals
     const search = searchParams.get('search') || '';
 
     try {
@@ -26,6 +27,13 @@ export async function GET(request: NextRequest) {
         // Filter by category (uses array contains)
         if (category !== 'all') {
             query = query.contains('categories', [category]);
+        }
+
+        // Filter by page type (Doctor/Specialist vs Practice/Hospital)
+        if (pageType !== 'all') {
+            // strip 's' from the end since we store 'specialist', 'practice', 'hospital'
+            const storedType = pageType.endsWith('s') && pageType !== 'all' ? pageType.slice(0, -1) : pageType;
+            query = query.filter('raw_data->>pageType', 'eq', storedType);
         }
 
         // Free-text search on name

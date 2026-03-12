@@ -121,9 +121,11 @@ export default function LeadCard({ lead, onEnrich, onSave, isSaved, isEnriched }
                 )}
 
                 {lead.PhoneNumber && (
-                    <div className="flex items-center gap-3 text-sm text-emerald-400">
+                    <div className="flex items-center gap-3 text-sm text-emerald-400" title={lead.PhoneNumber}>
                         <Phone className="h-4 w-4 shrink-0" />
-                        {lead.PhoneNumber}
+                        <span className="truncate">
+                            {lead.PhoneNumber.split(',').join(', ')}
+                        </span>
                     </div>
                 )}
 

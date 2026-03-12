@@ -41,6 +41,7 @@ export default function LeadTable() {
     const [serviceFilter, setServiceFilter] = useState('all');
     const [scrapedSource, setScrapedSource] = useState('all');
     const [scrapedCategory, setScrapedCategory] = useState('all');
+    const [scrapedPageType, setScrapedPageType] = useState('all');
     const [offset, setOffset] = useState(0);
     const offsetRef = useRef(0);
     const [hasMore, setHasMore] = useState(true);
@@ -96,6 +97,7 @@ export default function LeadTable() {
                     offset: currentOffset.toString(),
                     source: scrapedSource,
                     category: scrapedCategory,
+                    pageType: scrapedPageType,
                     search: searchTerm,
                 });
                 url = `/api/leads/scraped?${params.toString()}`;
@@ -136,7 +138,7 @@ export default function LeadTable() {
         } finally {
             setLoading(false);
         }
-    }, [roleFilter, searchTerm, cityTerm, dataType, serviceFilter, scrapedSource, scrapedCategory]);
+    }, [roleFilter, searchTerm, cityTerm, dataType, serviceFilter, scrapedSource, scrapedCategory, scrapedPageType]);
 
     // Debounce search — reset pagination when filters change
     useEffect(() => {
@@ -344,26 +346,41 @@ export default function LeadTable() {
                                 </div>
                             ) : dataType === 'Scraped' ? (
                                 <div className="flex gap-3 w-full">
-                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                    <div className="flex-[0.5] h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
                                         <Database className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
                                         <select
                                             value={scrapedSource}
                                             onChange={(e) => { setScrapedSource(e.target.value); setOffset(0); }}
                                             className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
                                         >
-                                            <option value="all" className="bg-slate-900">All Sources</option>
+                                            <option value="all" className="bg-slate-900">Sources: All</option>
                                             <option value="doctify" className="bg-slate-900">🔵 Doctify</option>
                                             <option value="goprivate" className="bg-slate-900">🟢 GoPrivate</option>
                                         </select>
                                     </div>
-                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                    <div className="flex-[0.7] h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
+                                        <Building2 className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
+                                        <select
+                                            value={scrapedPageType}
+                                            onChange={(e) => { setScrapedPageType(e.target.value); setOffset(0); }}
+                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                        >
+                                            <option value="all" className="bg-slate-900">Types: All</option>
+                                            <option value="specialist" className="bg-slate-900">👨‍⚕️ Doctors</option>
+                                            <option value="practice" className="bg-slate-900">🏥 Practices</option>
+                                            <option value="hospital" className="bg-slate-900">🏥 Hospitals</option>
+                                            <option value="pharmacy" className="bg-slate-900">💊 Pharmacies</option>
+                                            <option value="carehome" className="bg-slate-900">🏠 Care Homes</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex-[0.8] h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
                                         <Filter className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
                                         <select
                                             value={scrapedCategory}
                                             onChange={(e) => { setScrapedCategory(e.target.value); setOffset(0); }}
                                             className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
                                         >
-                                            <option value="all" className="bg-slate-900">All Categories</option>
+                                            <option value="all" className="bg-slate-900">Categories: All</option>
                                             <option value="weight-loss" className="bg-slate-900">⚖️ Weight Loss</option>
                                             <option value="hair-loss" className="bg-slate-900">💇 Hair Loss</option>
                                             <option value="cosmetic" className="bg-slate-900">✨ Cosmetic</option>
