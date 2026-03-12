@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Phone, MapPin, Globe, Building, Star, Users, Shield, Calendar, FileText, Activity, Award, Clock, ExternalLink, MessageCircle, Search, Mail, Heart, Pill, Languages, Image, BadgeCheck, Facebook, Twitter, Instagram, Linkedin, Youtube, Briefcase, Stethoscope, CheckCircle, GraduationCap, DollarSign, MapPinned, Brain, Sparkles } from 'lucide-react';
+import { X, Phone, MapPin, Globe, Building, Star, Users, Shield, Calendar, FileText, Activity, Award, Clock, ExternalLink, MessageCircle, Search, Mail, Heart, Pill, Languages, Image as ImageIcon, BadgeCheck, Facebook, Twitter, Instagram, Linkedin, Youtube, Briefcase, Stethoscope, CheckCircle, GraduationCap, DollarSign, MapPinned, Brain, Sparkles, HelpCircle, User, Home, Hospital, Clipboard, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DoctorProfilePanel from './DoctorProfilePanel';
 
@@ -236,6 +236,29 @@ export default function EnrichmentModal({ isOpen, onClose, lead, loading, onSave
                                         )}
                                     </div>
                                 </div>
+
+                                {/* ============================================================ */}
+                                {/* OPENING HOURS */}
+                                {/* ============================================================ */}
+                                {lead.OpeningHours && (
+                                    <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                                        <SectionHeader icon={<Clock className="h-4 w-4" />} label="Opening Hours" color="text-amber-400" />
+                                        {typeof lead.OpeningHours === 'string' ? (
+                                            <div className="text-sm text-slate-300 prose prose-invert max-w-none prose-td:p-1 prose-td:border-b prose-td:border-white/10" dangerouslySetInnerHTML={{ __html: lead.OpeningHours }} />
+                                        ) : (
+                                            <table className="w-full text-sm text-slate-300">
+                                                <tbody>
+                                                    {(lead.OpeningHours as any[]).map((oh, i) => (
+                                                        <tr key={i} className="border-b border-white/5 last:border-0">
+                                                            <td className="py-1 font-medium text-slate-400 w-1/3">{oh.day}</td>
+                                                            <td className="py-1">{oh.opens} - {oh.closes}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* ============================================================ */}
                                 {/* ABOUT / DESCRIPTION (Doctify) */}
@@ -710,7 +733,7 @@ export default function EnrichmentModal({ isOpen, onClose, lead, loading, onSave
                                 {/* ============================================================ */}
                                 {lead.GalleryImages && lead.GalleryImages.length > 0 && (
                                     <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                        <SectionHeader icon={<Image className="h-4 w-4" />} label={`Gallery (${lead.GalleryImages.length})`} color="text-pink-400" />
+                                        <SectionHeader icon={<ImageIcon className="h-4 w-4" />} label={`Gallery (${lead.GalleryImages.length})`} color="text-pink-400" />
                                         <div className="grid grid-cols-3 gap-2">
                                             {lead.GalleryImages.slice(0, 6).map((img, i) => (
                                                 <a key={i} href={img} target="_blank" rel="noopener noreferrer" className="rounded-lg overflow-hidden border border-white/5 hover:border-purple-500/30 transition-colors">

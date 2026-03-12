@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
         }
 
         // Step 1: Find the place
-        const searchQuery = `${name} ${address || ''} ${postcode || ''} UK`.trim();
+        // Google's findplacefromtext is easily confused by long complex addresses (e.g. "Unit 41"). 
+        // Name + Postcode is the most reliable way to find a business. If no postcode, use city/last part of address.
+        const locationHint = postcode ? postcode : (address ? address.split(',').pop()?.trim() : '');
+        const searchQuery = `${name} ${locationHint} UK`.trim();
         const findUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(searchQuery)}&inputtype=textquery&fields=place_id,name,formatted_address&key=${GOOGLE_API_KEY}`;
 
         const findRes = await fetch(findUrl);
