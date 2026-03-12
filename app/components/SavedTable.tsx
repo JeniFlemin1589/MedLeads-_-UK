@@ -9,22 +9,7 @@ import { useToast } from '@/components/ToastProvider';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-interface Lead {
-    Name: string;
-    ODS_Code: string;
-    Status: string;
-    Address?: string;
-    City?: string;
-    Postcode: string;
-    Country: string;
-    Role: string;
-    Type: 'Pharmacy' | 'Clinic' | 'Hospital';
-    Website?: string;
-    PhoneNumber?: string;
-    Email?: string;
-    FullAddress?: string;
-    SavedAt?: string;
-}
+import { Lead } from '@/types';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));

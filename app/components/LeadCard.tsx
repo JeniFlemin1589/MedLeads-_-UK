@@ -5,33 +5,7 @@ import { Phone, MapPin, Building2, Globe, MoreHorizontal, Save, Zap, Check, Tag,
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 
-interface Lead {
-    Name: string;
-    ODS_Code: string;
-    Status: string;
-    Address?: string;
-    City?: string;
-    Postcode: string;
-    Country: string;
-    Role: string;
-    Type: string;
-    Website?: string;
-    PhoneNumber?: string;
-    Email?: string;
-    OverallRating?: string;
-    ServiceTypes?: string[];
-    // Doctify-specific fields
-    Rating?: number;
-    ReviewCount?: number;
-    Categories?: string[];
-    Source?: string;
-    SourceUrl?: string;
-    ImageUrl?: string;
-    Description?: string;
-    Specialties?: string[];
-    ScrapedAt?: string;
-    PageType?: string;
-}
+import { Lead } from '@/types';
 
 interface LeadCardProps {
     lead: Lead;

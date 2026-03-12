@@ -8,42 +8,7 @@ import EnrichmentModal from './EnrichmentModal';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-interface Lead {
-    Name: string;
-    ODS_Code: string;
-    Status: string;
-    Address?: string;
-    City?: string;
-    Postcode: string;
-    Country: string;
-    Role: string;
-    Type: string;
-    Website?: string;
-    PhoneNumber?: string;
-    Email?: string;
-    FullAddress?: string;
-
-    // CQC-specific fields
-    Region?: string;
-    OverallRating?: string;
-    RatingDate?: string;
-    DetailedRatings?: { category: string; rating: string }[];
-    Contacts?: { name: string; roles: string[] }[];
-    RegulatedActivities?: string[];
-    ServiceTypes?: string[];
-    Specialisms?: string[];
-    InspectionCategories?: string[];
-    LastInspectionDate?: string;
-    LastReportDate?: string;
-    Reports?: { date: string; uri: string }[];
-    RegistrationDate?: string;
-    LocalAuthority?: string;
-    IcbName?: string;
-    NumberOfBeds?: number;
-    ProviderId?: string;
-    Latitude?: number;
-    Longitude?: number;
-}
+import { Lead } from '@/types';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
     return twMerge(clsx(inputs));
