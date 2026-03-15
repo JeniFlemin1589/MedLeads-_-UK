@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { calculateLeadScore } from '@/lib/intelligence';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
                 }));
             }
 
-            return {
+            const leadObj: any = {
                 Name: row.name,
                 ODS_Code: row.id,
                 Status: 'Active',
@@ -163,6 +164,10 @@ export async function GET(request: NextRequest) {
                 AiReviewSummary: rd.aiReviewSummary || null,
                 YearsOfExperience: rd.yearsOfExperience || null,
             };
+
+            leadObj.LeadScore = calculateLeadScore(leadObj);
+
+            return leadObj;
         });
 
         return NextResponse.json({

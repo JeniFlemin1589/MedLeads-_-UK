@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateLeadScore } from '@/lib/intelligence';
 
 const CQC_API_URL = "https://api.service.cqc.org.uk/public/v1";
 const API_KEY = process.env.CQC_API_KEY;
@@ -109,7 +110,7 @@ export async function GET(request: NextRequest) {
             const ratings = org.currentRatings?.overall;
             const keyRatings = ratings?.keyQuestionRatings || [];
 
-            return {
+            const baseLead = {
                 // Core lead info
                 Name: org.name,
                 ODS_Code: org.locationId,
@@ -167,6 +168,11 @@ export async function GET(request: NextRequest) {
                 // ICB info
                 IcbName: org.onspdIcbName,
                 CcgName: org.onspdCcgName
+            };
+
+            return {
+                ...baseLead,
+                LeadScore: calculateLeadScore(baseLead)
             };
         });
 

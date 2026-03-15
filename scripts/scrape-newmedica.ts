@@ -150,7 +150,7 @@ async function scrapeNewmedica() {
                     address: addressParams || undefined,
                     phone: phone,
                     description: description.substring(0, 1000), // Ensure it fits
-                    categories: [category],
+                    categories: [category, 'eye-care'],
                     raw_data: {
                         pageType: pageType,
                         category: category,

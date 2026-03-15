@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateLeadScore } from '@/lib/intelligence';
 
 const ODS_API_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations";
 
@@ -30,17 +31,10 @@ export async function GET(request: NextRequest) {
 
         // Handle Town/Postcode logic
         if (town) {
-            // Simple regex for postcode start (e.g. SW1, M1, SK7)
-            // 1-2 letters, 1-2 numbers
             const isPostcode = /^[a-zA-Z]{1,2}[0-9]/.test(town.trim());
-
             if (isPostcode) {
-                // Use first part of postcode if it has space, or just value
                 queryParams.PostCode = town.trim();
             } else {
-                // It's likely a city name (e.g. "London")
-                // WE MUST pass this to the API Name param if no other search is present,
-                // otherwise we get 100 random records and filter them all out.
                 filterByCity = town.trim().toLowerCase();
                 if (!search) {
                     queryParams.Name = town.trim();
@@ -48,14 +42,10 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Explicit postcode overrides
         if (postcode) queryParams.PostCode = postcode;
-
 
         const queryString = new URLSearchParams(queryParams).toString();
         const url = `${ODS_API_URL}?${queryString}`;
-
-
 
         const res = await fetch(url, {
             headers: {
@@ -64,16 +54,13 @@ export async function GET(request: NextRequest) {
         });
 
         if (!res.ok) {
-            // If 406, it might be due to bad PostCode format. Recover?
             const text = await res.text();
-            console.error("NHS API Error", res.status, text);
             return NextResponse.json({ error: 'NHS API Error', details: text }, { status: res.status });
         }
 
         const data = await res.json();
         let orgs = data.Organisations || [];
 
-        // Filter by City if needed
         if (filterByCity) {
             orgs = orgs.filter((org: any) => {
                 const addr = (org.GeoLoc?.Location?.AddrLn1 || '').toLowerCase();
@@ -83,20 +70,27 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Transform to our Lead interface
-        const leads = orgs.map((org: any) => ({
-            Name: org.Name,
-            ODS_Code: org.OrgId,
-            Status: org.Status,
-            Address: org.GeoLoc?.Location?.AddrLn1 || '',
-            City: org.GeoLoc?.Location?.Town || '',
-            Postcode: org.PostCode || '',
-            Country: 'UK',
-            Role: org.PrimaryRoleDescription,
-            Type: mapRoleToType(org.PrimaryRoleId),
-        }));
+        // Transform to our Lead interface with Intelligent Scoring
+        const leads = orgs.map((org: any) => {
+            const type = mapRoleToType(org.PrimaryRoleId);
+            const baseLead = {
+                Name: org.Name,
+                ODS_Code: org.OrgId,
+                Status: org.Status,
+                Address: org.GeoLoc?.Location?.AddrLn1 || '',
+                City: org.GeoLoc?.Location?.Town || '',
+                Postcode: org.PostCode || '',
+                Country: 'UK',
+                Role: org.PrimaryRoleDescription,
+                Type: type,
+            };
 
-        // Pass back the total count headers if available (NHS ODS sends X-Total-Count)
+            return {
+                ...baseLead,
+                LeadScore: calculateLeadScore(baseLead)
+            };
+        });
+
         const totalCount = res.headers.get('X-Total-Count') || '0';
 
         return NextResponse.json({

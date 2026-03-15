@@ -47,21 +47,19 @@ interface DoctorProfilePanelProps {
     onClose: () => void;
 }
 
-function PillList({ items, color = 'indigo' }: { items: string[]; color?: string }) {
+function PillList({ items, color = 'blue' }: { items: string[]; color?: string }) {
     const colorMap: Record<string, string> = {
-        indigo: 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20',
-        teal: 'bg-teal-500/10 text-teal-300 border-teal-500/20',
-        rose: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
-        amber: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-        cyan: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
-        purple: 'bg-purple-500/10 text-purple-300 border-purple-500/20',
-        emerald: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-        sky: 'bg-sky-500/10 text-sky-300 border-sky-500/20',
+        blue: 'bg-blue-50 text-blue-700 border-blue-100',
+        teal: 'bg-teal-50 text-teal-700 border-teal-100',
+        rose: 'bg-rose-50 text-rose-700 border-rose-100',
+        amber: 'bg-amber-50 text-amber-700 border-amber-100',
+        indigo: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+        emerald: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     };
     return (
         <div className="flex flex-wrap gap-1">
             {items.map((item, i) => (
-                <span key={i} className={`px-2 py-0.5 ${colorMap[color] || colorMap.indigo} border rounded-full text-[10px] font-medium`}>{item}</span>
+                <span key={i} className={`px-2 py-0.5 ${colorMap[color] || colorMap.blue} border rounded-full text-[10px] font-bold`}>{item}</span>
             ))}
         </div>
     );
@@ -71,7 +69,7 @@ function SectionHeader({ icon, label, color = 'text-slate-400' }: { icon: React.
     return (
         <div className="flex items-center gap-2 mb-3">
             <span className={color}>{icon}</span>
-            <span className="text-xs text-slate-400 uppercase font-semibold tracking-wider">{label}</span>
+            <span className="text-xs text-slate-500 uppercase font-black tracking-wider">{label}</span>
         </div>
     );
 }
@@ -112,41 +110,41 @@ export default function DoctorProfilePanel({ profileUrl, doctorName, onClose }: 
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
-                className="absolute inset-0 bg-slate-900 z-10 flex flex-col overflow-hidden"
+                className="absolute inset-0 bg-white z-10 flex flex-col overflow-hidden"
             >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-cyan-900/30 to-slate-900 p-4 border-b border-white/10 shrink-0">
+                <div className="bg-gradient-to-r from-blue-50 to-white p-4 border-b border-slate-100 shrink-0">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onClose}
-                            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                            className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
                         >
                             <ChevronLeft className="h-5 w-5" />
                         </button>
                         <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-400 border border-cyan-500/20">
-                                    🩺 DOCTOR PROFILE
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white border border-blue-700 shadow-sm uppercase tracking-widest">
+                                    🩺 Dr Intelligence
                                 </span>
                             </div>
-                            <h3 className="text-lg font-bold text-white truncate mt-1">
+                            <h3 className="text-lg font-black text-slate-900 truncate mt-1">
                                 {loading ? (doctorName || 'Loading...') : (doctor?.Name || doctorName || 'Doctor Profile')}
                             </h3>
                             {!loading && doctor?.Specialties && doctor.Specialties.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                     {doctor.Specialties.slice(0, 3).map((s, i) => (
-                                        <span key={i} className="px-1.5 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded text-[9px]">{s}</span>
+                                        <span key={i} className="px-1.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded text-[9px] font-bold">{s}</span>
                                     ))}
                                 </div>
                             )}
                         </div>
                         {!loading && doctor?.Rating && (
-                            <div className="text-right shrink-0">
-                                <div className="flex items-center gap-1">
-                                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                                    <span className="text-sm font-bold text-yellow-400">{doctor.Rating.toFixed(1)}</span>
+                            <div className="text-right shrink-0 p-2 bg-amber-50 rounded-xl border border-amber-100 shadow-sm">
+                                <div className="flex items-center gap-1 justify-end">
+                                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+                                    <span className="text-sm font-black text-amber-600">{doctor.Rating.toFixed(1)}</span>
                                 </div>
-                                {doctor.ReviewCount ? <div className="text-[9px] text-slate-500">{doctor.ReviewCount} reviews</div> : null}
+                                {doctor.ReviewCount ? <div className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">{doctor.ReviewCount} reviews</div> : null}
                             </div>
                         )}
                     </div>
@@ -157,19 +155,22 @@ export default function DoctorProfilePanel({ profileUrl, doctorName, onClose }: 
                     {/* Loading state */}
                     {loading && (
                         <div className="flex flex-col items-center justify-center py-16 gap-3">
-                            <Loader2 className="h-8 w-8 text-cyan-400 animate-spin" />
-                            <p className="text-sm text-slate-400">Loading doctor profile...</p>
+                            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                            <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Hydrating Pulse...</p>
+                            <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">Hydrating Pulse...</p>
                         </div>
                     )}
 
                     {/* Not found state */}
                     {!loading && notFound && (
                         <div className="flex flex-col items-center justify-center py-16 gap-3">
-                            <Stethoscope className="h-12 w-12 text-slate-700" />
-                            <p className="text-sm text-slate-400 text-center">
-                                Doctor profile not yet in our database.<br />
-                                <a href={profileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 mt-1 inline-flex items-center gap-1">
-                                    View on Doctify <ExternalLink className="h-3 w-3" />
+                            <div className="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center">
+                                <Stethoscope className="h-8 w-8 text-slate-300" />
+                            </div>
+                            <p className="text-sm text-slate-500 text-center font-medium">
+                                Doctor profile not found in local intelligence.<br />
+                                <a href={profileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 font-black mt-2 inline-flex items-center gap-1 uppercase tracking-tighter">
+                                    Verify on Doctify <ExternalLink className="h-3 w-3" />
                                 </a>
                             </p>
                         </div>
@@ -179,39 +180,47 @@ export default function DoctorProfilePanel({ profileUrl, doctorName, onClose }: 
                     {!loading && doctor && (
                         <>
                             {/* Contact info */}
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-400">
+                            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-bold">
                                 {doctor.Address && (
-                                    <span className="flex items-center gap-1">
-                                        <MapPin className="h-3 w-3 text-rose-400" />
+                                    <span className="flex items-center gap-1.5 text-slate-500">
+                                        <MapPin className="h-3.5 w-3.5 text-rose-500" />
                                         {doctor.Address}
                                     </span>
                                 )}
                                 {doctor.Phone && (
-                                    <a href={`tel:${doctor.Phone}`} className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300">
-                                        <Phone className="h-3 w-3" />{doctor.Phone}
-                                    </a>
+                                    <div className="flex flex-wrap gap-x-2 items-center">
+                                        <Phone className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                                        {doctor.Phone.split(/[,;]/).map((p, idx) => (
+                                            <a key={idx} href={`tel:${p.trim()}`} className="text-emerald-600 hover:text-emerald-700 whitespace-nowrap">{p.trim()}</a>
+                                        ))}
+                                    </div>
                                 )}
                                 {doctor.Email && (
-                                    <a href={`mailto:${doctor.Email}`} className="flex items-center gap-1 text-blue-400 hover:text-blue-300">
-                                        <Mail className="h-3 w-3" />{doctor.Email}
+                                    <a href={`mailto:${doctor.Email}`} className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700">
+                                        <Mail className="h-3.5 w-3.5" />{doctor.Email}
                                     </a>
                                 )}
                                 {doctor.Website && (
-                                    <a href={doctor.Website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-400 hover:text-blue-300">
-                                        <Globe className="h-3 w-3" />Website
-                                    </a>
+                                    <div className="flex flex-wrap gap-x-2 items-center break-all">
+                                        <Globe className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                                        {doctor.Website.split(/[,;]/).map((w, idx) => (
+                                            <a key={idx} href={w.trim().startsWith('http') ? w.trim() : `https://${w.trim()}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">
+                                                {w.trim().replace(/^https?:\/\//, '').replace(/\/$/, '') || 'Website'}
+                                            </a>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
 
                             {/* Bio / About */}
                             {doctor.Bio && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<FileText className="h-4 w-4" />} label="About" color="text-sky-400" />
-                                    <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{doctor.Bio}</p>
+                                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                                    <SectionHeader icon={<FileText className="h-4 w-4" />} label="Professional Dossier" color="text-blue-600" />
+                                    <p className="text-slate-700 text-sm leading-relaxed whitespace-pre-line">{doctor.Bio}</p>
                                     {doctor.YearsOfExperience && (
-                                        <div className="flex items-center gap-2 text-sm text-slate-400 mt-3">
-                                            <Calendar className="h-4 w-4 text-emerald-400" />
-                                            <span className="font-medium text-emerald-300">{doctor.YearsOfExperience}+ years</span> of experience
+                                        <div className="flex items-center gap-2 text-sm text-slate-600 mt-4 pt-4 border-t border-slate-200">
+                                            <Calendar className="h-4 w-4 text-emerald-600" />
+                                            <span className="font-black text-emerald-700">{doctor.YearsOfExperience}+ years</span> of clinical tenure
                                         </div>
                                     )}
                                 </div>
@@ -219,27 +228,30 @@ export default function DoctorProfilePanel({ profileUrl, doctorName, onClose }: 
 
                             {/* AI Review Summary */}
                             {doctor.AiReviewSummary && (
-                                <div className="p-4 bg-purple-500/5 rounded-xl border border-purple-500/10">
-                                    <SectionHeader icon={<Sparkles className="h-4 w-4" />} label="What Patients Say" color="text-purple-400" />
-                                    <p className="text-slate-300 text-sm leading-relaxed italic">{"\u201C"}{doctor.AiReviewSummary}{"\u201D"}</p>
+                                <div className="p-5 bg-blue-600/5 rounded-2xl border border-blue-600/10 relative overflow-hidden group/ai">
+                                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover/ai:scale-125 transition-transform">
+                                        <Sparkles className="h-10 w-10 text-blue-600" />
+                                    </div>
+                                    <SectionHeader icon={<Sparkles className="h-4 w-4" />} label="Sentiment engine Summary" color="text-blue-700" />
+                                    <p className="text-slate-800 text-sm font-medium italic relative z-10 leading-relaxed">{"\u201C"}{doctor.AiReviewSummary}{"\u201D"}</p>
                                 </div>
                             )}
 
                             {/* Consultation Fees */}
                             {doctor.ConsultationFees && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<DollarSign className="h-4 w-4" />} label="Consultation Fees" color="text-emerald-400" />
+                                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                                    <SectionHeader icon={<DollarSign className="h-4 w-4" />} label="Consultation Fees" color="text-emerald-600" />
                                     <div className="grid grid-cols-2 gap-3">
                                         {doctor.ConsultationFees.newPatient && (
-                                            <div className="p-3 bg-slate-800/50 rounded-lg text-center">
+                                            <div className="p-3 bg-white border border-slate-100 rounded-xl text-center shadow-sm">
                                                 <div className="text-[10px] text-slate-500 uppercase">New Patient</div>
-                                                <div className="text-lg font-bold text-emerald-400">{doctor.ConsultationFees.newPatient}</div>
+                                                <div className="text-lg font-bold text-emerald-600">{doctor.ConsultationFees.newPatient}</div>
                                             </div>
                                         )}
                                         {doctor.ConsultationFees.followUp && (
-                                            <div className="p-3 bg-slate-800/50 rounded-lg text-center">
+                                            <div className="p-3 bg-white border border-slate-100 rounded-xl text-center shadow-sm">
                                                 <div className="text-[10px] text-slate-500 uppercase">Follow-up</div>
-                                                <div className="text-lg font-bold text-blue-400">{doctor.ConsultationFees.followUp}</div>
+                                                <div className="text-lg font-bold text-blue-600">{doctor.ConsultationFees.followUp}</div>
                                             </div>
                                         )}
                                     </div>
@@ -248,57 +260,67 @@ export default function DoctorProfilePanel({ profileUrl, doctorName, onClose }: 
 
                             {/* Qualifications & Education */}
                             {doctor.Education && doctor.Education.length > 0 && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<GraduationCap className="h-4 w-4" />} label={`Education (${doctor.Education.length})`} color="text-indigo-400" />
+                                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                                    <SectionHeader icon={<GraduationCap className="h-4 w-4" />} label={`Academic credentials (${doctor.Education.length})`} color="text-indigo-600" />
                                     <div className="space-y-2">
                                         {doctor.Education.map((edu, i) => (
-                                            <div key={i} className="p-2 bg-slate-800/50 rounded-lg flex items-center justify-between">
+                                            <div key={i} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center justify-between shadow-sm">
                                                 <div>
-                                                    <span className="text-xs text-slate-200 font-medium">{edu.degree}</span>
-                                                    {edu.institution && <span className="text-[10px] text-slate-500 ml-2">— {edu.institution}</span>}
+                                                    <span className="text-xs text-slate-900 font-black uppercase tracking-tight">{edu.degree}</span>
+                                                    {edu.institution && <span className="text-[10px] text-slate-500 block mt-0.5">{edu.institution}</span>}
                                                 </div>
-                                                {edu.year && <span className="text-[10px] text-slate-600">{edu.year}</span>}
+                                                {edu.year && <span className="px-2 py-1 bg-slate-100 rounded text-[9px] font-bold text-slate-500">{edu.year}</span>}
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Skills & Endorsements */}
-                            {doctor.Skills && doctor.Skills.length > 0 && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<Brain className="h-4 w-4" />} label={`Skills & Endorsements (${doctor.Skills.length})`} color="text-cyan-400" />
-                                    <div className="flex flex-wrap gap-2">
-                                        {doctor.Skills.map((s, i) => (
-                                            <span key={i} className="px-2 py-1 bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 rounded-full text-[10px] font-medium">
-                                                {s.skill}{s.endorsementCount > 0 && <span className="ml-1 text-cyan-500">({s.endorsementCount})</span>}
-                                            </span>
-                                        ))}
+                            {/* Skills, Insurance & Languages */}
+                            <div className="space-y-4">
+                                {doctor.Skills && doctor.Skills.length > 0 && (
+                                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                                        <SectionHeader icon={<Brain className="h-4 w-4" />} label={`Active competencies (${doctor.Skills.length})`} color="text-blue-600" />
+                                        <PillList items={doctor.Skills.map(s => `${s.skill} (${s.endorsementCount})`)} color="blue" />
                                     </div>
-                                </div>
-                            )}
+                                )}
+                                
+                                {doctor.Insurance && doctor.Insurance.length > 0 && (
+                                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                                        <SectionHeader icon={<Shield className="h-4 w-4" />} label="Recognized Carriers" color="text-indigo-600" />
+                                        <PillList items={doctor.Insurance} color="indigo" />
+                                    </div>
+                                )}
+
+                                {doctor.Languages && doctor.Languages.length > 0 && (
+                                    <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200">
+                                        <SectionHeader icon={<Languages className="h-4 w-4" />} label="Linguistic capabilities" color="text-purple-600" />
+                                        <PillList items={doctor.Languages} color="purple" />
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Practice Locations */}
                             {doctor.PracticeLocations && doctor.PracticeLocations.length > 0 && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<MapPinned className="h-4 w-4" />} label={`Practice Locations (${doctor.PracticeLocations.length})`} color="text-rose-400" />
+                                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                                    <SectionHeader icon={<MapPinned className="h-4 w-4" />} label={`Strategic Deployments (${doctor.PracticeLocations.length})`} color="text-rose-600" />
                                     <div className="space-y-2">
                                         {doctor.PracticeLocations.map((loc, i) => (
-                                            <div key={i} className="p-2 bg-slate-800/50 rounded-lg flex items-center justify-between">
+                                            <div key={i} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center justify-between shadow-sm group/loc hover:border-rose-200 transition-all">
                                                 <div className="min-w-0">
                                                     {loc.url ? (
-                                                        <a href={loc.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-blue-300 font-medium">
-                                                            {loc.name} <ExternalLink className="h-3 w-3 inline" />
+                                                        <a href={loc.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:text-blue-700 font-black uppercase tracking-tighter">
+                                                            {loc.name} <ExternalLink className="h-3 w-3 inline opacity-50" />
                                                         </a>
                                                     ) : (
-                                                        <span className="text-xs text-slate-200 font-medium">{loc.name}</span>
+                                                        <span className="text-xs text-slate-900 font-black uppercase tracking-tighter">{loc.name}</span>
                                                     )}
-                                                    {loc.address && <div className="text-[10px] text-slate-500 truncate">{loc.address}</div>}
+                                                    {loc.address && <div className="text-[10px] text-slate-500 truncate mt-0.5">{loc.address}</div>}
                                                 </div>
                                                 {loc.rating && (
-                                                    <div className="flex items-center gap-0.5 shrink-0">
-                                                        <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                                                        <span className="text-[10px] font-bold text-yellow-400">{loc.rating.toFixed(1)}</span>
+                                                    <div className="flex items-center gap-1 shrink-0 p-1.5 bg-amber-50 rounded-lg border border-amber-100">
+                                                        <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                                                        <span className="text-[10px] font-black text-amber-600">{loc.rating.toFixed(1)}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -309,63 +331,47 @@ export default function DoctorProfilePanel({ profileUrl, doctorName, onClose }: 
 
                             {/* Services & Treatments */}
                             {((doctor.Services && doctor.Services.length > 0) || (doctor.Treatments && doctor.Treatments.length > 0) || (doctor.ConditionsTreated && doctor.ConditionsTreated.length > 0)) && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5 space-y-3">
+                                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                                     {doctor.Services && doctor.Services.length > 0 && (
                                         <div>
-                                            <SectionHeader icon={<Activity className="h-4 w-4" />} label={`Services (${doctor.Services.length})`} color="text-teal-400" />
+                                            <SectionHeader icon={<Activity className="h-4 w-4" />} label={`Services Rendered (${doctor.Services.length})`} color="text-teal-600" />
                                             <PillList items={doctor.Services} color="teal" />
                                         </div>
                                     )}
                                     {doctor.Treatments && doctor.Treatments.length > 0 && (
                                         <div>
-                                            <SectionHeader icon={<Heart className="h-4 w-4" />} label={`Treatments (${doctor.Treatments.length})`} color="text-rose-400" />
+                                            <SectionHeader icon={<Heart className="h-4 w-4" />} label={`Therapeutic Interventions (${doctor.Treatments.length})`} color="text-rose-600" />
                                             <PillList items={doctor.Treatments} color="rose" />
                                         </div>
                                     )}
                                     {doctor.ConditionsTreated && doctor.ConditionsTreated.length > 0 && (
                                         <div>
-                                            <SectionHeader icon={<Activity className="h-4 w-4" />} label={`Conditions (${doctor.ConditionsTreated.length})`} color="text-amber-400" />
+                                            <SectionHeader icon={<Activity className="h-4 w-4" />} label={`Conditions Managed (${doctor.ConditionsTreated.length})`} color="text-amber-600" />
                                             <PillList items={doctor.ConditionsTreated} color="amber" />
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            {/* Insurance */}
-                            {doctor.Insurance && doctor.Insurance.length > 0 && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<Shield className="h-4 w-4" />} label={`Insurance Accepted (${doctor.Insurance.length})`} color="text-indigo-400" />
-                                    <PillList items={doctor.Insurance} color="indigo" />
-                                </div>
-                            )}
-
-                            {/* Languages */}
-                            {doctor.Languages && doctor.Languages.length > 0 && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<Languages className="h-4 w-4" />} label={`Languages (${doctor.Languages.length})`} color="text-purple-400" />
-                                    <PillList items={doctor.Languages} color="purple" />
-                                </div>
-                            )}
-
                             {/* Reviews */}
                             {doctor.Reviews && doctor.Reviews.length > 0 && (
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                                    <SectionHeader icon={<MessageCircle className="h-4 w-4" />} label={`Patient Reviews (${doctor.Reviews.length})`} color="text-yellow-400" />
-                                    <div className="space-y-2">
+                                <div className="space-y-4">
+                                    <SectionHeader icon={<MessageCircle className="h-4 w-4" />} label={`Patient Sentiment (${doctor.Reviews.length})`} color="text-amber-600" />
+                                    <div className="space-y-3">
                                         {doctor.Reviews.slice(0, 5).map((review, i) => (
-                                            <div key={i} className="p-3 bg-slate-800/50 rounded-lg border border-white/5">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-xs font-medium text-slate-300">{review.author || 'Anonymous'}</span>
-                                                    <span className="text-[10px] text-slate-600">{review.date}</span>
+                                            <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 hover:bg-white hover:shadow-lg transition-all">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs font-black text-slate-900 uppercase tracking-tighter">{review.author || 'Intelligence Anonymous'}</span>
+                                                    <span className="text-[10px] text-slate-400 font-bold">{review.date}</span>
                                                 </div>
                                                 {review.rating && (
-                                                    <div className="flex items-center gap-0.5 mb-2">
+                                                    <div className="flex items-center gap-0.5 mb-3">
                                                         {[1, 2, 3, 4, 5].map(s => (
-                                                            <Star key={s} className={`h-3 w-3 ${s <= review.rating! ? 'text-yellow-400 fill-yellow-400' : 'text-slate-700'}`} />
+                                                            <Star key={s} className={`h-3 w-3 ${s <= review.rating! ? 'text-amber-500 fill-amber-500' : 'text-slate-200'}`} />
                                                         ))}
                                                     </div>
                                                 )}
-                                                <p className="text-xs text-slate-400 line-clamp-3">{review.text}</p>
+                                                <p className="text-xs text-slate-600 leading-relaxed font-medium italic">{"\u201C"}{review.text}{"\u201D"}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -373,14 +379,14 @@ export default function DoctorProfilePanel({ profileUrl, doctorName, onClose }: 
                             )}
 
                             {/* View on Doctify link */}
-                            <div className="text-center pt-2 pb-4">
+                            <div className="text-center pt-8 pb-4">
                                 <a
                                     href={doctor.Url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-600/20 rounded-xl text-blue-400 text-xs font-medium transition-colors"
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
                                 >
-                                    View full profile on Doctify <ExternalLink className="h-3 w-3" />
+                                    Verify full Dossier on Doctify <ExternalLink className="h-3 w-3" />
                                 </a>
                             </div>
                         </>

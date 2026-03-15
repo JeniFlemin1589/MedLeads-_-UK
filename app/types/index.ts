@@ -85,4 +85,5 @@ export interface Lead {
     SpecialistLocations?: { name: string; address?: string; rating?: number; url?: string }[];
     AiReviewSummary?: string;
     YearsOfExperience?: number;
+    LeadScore?: number; // Propensity-to-buy intelligence score
 }

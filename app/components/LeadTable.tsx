@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, MapPin, Building2, Activity, Hospital, Filter, X, Globe, Lock, Stethoscope, Database } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Search, MapPin, Building2, Activity, Hospital, Filter, X, Globe, Lock, Stethoscope, Database, Zap, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import LeadCard from './LeadCard';
 import EnrichmentModal from './EnrichmentModal';
 import clsx from 'clsx';
@@ -252,298 +252,224 @@ export default function LeadTable() {
     };
 
     return (
-        <div className="space-y-8">
-            {/* Content Switch */}
-            <div className="space-y-8">
-                {/* Search Bar & Filters */}
-                <div className="bg-white/5 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-2xl space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        {/* Data Source Switcher */}
-                        <div className="md:col-span-12 flex justify-center pb-4">
-                            <div className="bg-slate-900/50 p-1 rounded-xl border border-white/10 flex gap-2">
+        <div className="space-y-10">
+            {/* Control Center */}
+            <div className="space-y-6">
+                {/* Primary Search & Source Picker */}
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
+                    {/* Source Switcher - High End Segment Control */}
+                    <div className="xl:col-span-4">
+                        <div className="p-1.5 bg-slate-100 rounded-2xl border border-slate-200 flex gap-1">
+                            {[
+                                { id: 'NHS', label: 'NHS ODS', icon: Activity, color: 'text-blue-600', activeBg: 'bg-blue-600' },
+                                { id: 'Private', label: 'CQC Private', icon: Lock, color: 'text-amber-600', activeBg: 'bg-amber-600' },
+                                { id: 'Scraped', label: 'Scraped Web', icon: Database, color: 'text-purple-600', activeBg: 'bg-purple-600' }
+                            ].map((tab) => (
                                 <button
-                                    onClick={() => setDataType('NHS')}
+                                    key={tab.id}
+                                    onClick={() => setDataType(tab.id as any)}
                                     className={cn(
-                                        "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-                                        dataType === 'NHS'
-                                            ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
-                                            : "text-slate-400 hover:text-white"
+                                        "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all",
+                                        dataType === tab.id
+                                            ? `${tab.activeBg} text-white shadow-md`
+                                            : "text-slate-500 hover:text-slate-900 hover:bg-white"
                                     )}
                                 >
-                                    <Activity className="h-4 w-4" />
-                                    NHS Database
+                                    <tab.icon className={cn("h-3.5 w-3.5", dataType === tab.id ? "text-white" : tab.color)} />
+                                    {tab.label}
                                 </button>
-                                <button
-                                    onClick={() => setDataType('Private')}
-                                    className={cn(
-                                        "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-                                        dataType === 'Private'
-                                            ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                                            : "text-slate-400 hover:text-white"
-                                    )}
-                                >
-                                    <Lock className="h-4 w-4" />
-                                    Private Sector
-                                </button>
-                                <button
-                                    onClick={() => setDataType('Scraped')}
-                                    className={cn(
-                                        "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
-                                        dataType === 'Scraped'
-                                            ? "bg-purple-500 text-white shadow-lg shadow-purple-500/20"
-                                            : "text-slate-400 hover:text-white"
-                                    )}
-                                >
-                                    <Database className="h-4 w-4" />
-                                    Scraped Data
-                                </button>
-                            </div>
+                            ))}
                         </div>
+                    </div>
 
-                        {/* Main Search - NHS and Scraped */}
-                        {(dataType === 'NHS' || dataType === 'Scraped') && (
-                            <div className={cn("relative group", dataType === 'Scraped' ? "md:col-span-8" : "md:col-span-5")}>
-                                <div className={cn(
-                                    "w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 transition-all",
-                                    dataType === 'Scraped'
-                                        ? "focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50"
-                                        : "focus-within:ring-2 focus-within:ring-emerald-500/50 focus-within:border-emerald-500/50"
-                                )}>
-                                    <Search className={cn(
-                                        "h-5 w-5 transition-colors flex-shrink-0 mr-3",
-                                        dataType === 'Scraped' ? "text-purple-400" : "text-slate-400 group-focus-within:text-emerald-500"
-                                    )} />
-                                    <input
-                                        type="text"
-                                        placeholder={dataType === 'Scraped' ? "Search clinic or doctor name..." : "Search Organisation Name..."}
-                                        className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-0 font-medium h-full"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
+                    {/* Main Search Bar */}
+                    <div className="xl:col-span-8">
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                             </div>
-                        )}
+                            <input
+                                type="text"
+                                placeholder={dataType === 'Scraped' ? "Query doctor or practice..." : "Search official organisation name..."}
+                                className="w-full h-14 bg-white border border-slate-200 rounded-2xl pl-12 pr-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium shadow-sm"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            {loading && (
+                                <div className="absolute inset-y-0 right-5 flex items-center">
+                                    <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
 
-                        {/* Filter Controls - depends on data type */}
-                        <div className={cn(
-                            "relative group",
-                            dataType === 'NHS' ? "md:col-span-3" : "md:col-span-12"
-                        )}>
-                            {dataType === 'NHS' ? (
-                                <div className="w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500/50 transition-all">
-                                    <MapPin className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors flex-shrink-0 mr-3" />
-                                    <input
-                                        type="text"
-                                        placeholder="City or Postcode (e.g. SW1)..."
-                                        className="w-full bg-transparent border-none text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-0 font-medium h-full"
-                                        value={cityTerm}
-                                        onChange={(e) => {
-                                            setCityTerm(e.target.value);
-                                            setLondonOnly(e.target.value.toLowerCase().includes('london'));
-                                        }}
-                                    />
+                {/* Secondary Filters */}
+                <div className="flex flex-wrap items-center gap-4 py-2 border-t border-slate-100 pt-6">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mr-2">
+                        <Filter className="h-3 w-3" /> Targeted parameters
+                    </div>
+
+                    {/* Geography Picker */}
+                    <div className="flex p-1 bg-slate-100 rounded-xl border border-slate-200">
+                        <button
+                            onClick={() => { setLondonOnly(false); setCityTerm(''); }}
+                            className={cn(
+                                "px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                                !londonOnly ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                            )}
+                        >
+                            UK Wide
+                        </button>
+                        <button
+                            onClick={() => { setLondonOnly(true); setCityTerm('London'); }}
+                            className={cn(
+                                "px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                                londonOnly ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                            )}
+                        >
+                            London
+                        </button>
+                    </div>
+
+                    {/* Specific Data-Type Filters */}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={dataType}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex flex-wrap gap-3"
+                        >
+                            {dataType === 'NHS' && (
+                                <div className="flex p-1 bg-slate-100 rounded-xl border border-slate-200">
+                                    {['Pharmacy', 'Clinic', 'Hospital'].map((role) => (
+                                        <button
+                                            key={role}
+                                            onClick={() => setRoleFilter(role as any)}
+                                            className={cn(
+                                                "px-4 py-1.5 rounded-lg text-[11px] font-bold transition-all",
+                                                roleFilter === role ? "bg-blue-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                            )}
+                                        >
+                                            {role}
+                                        </button>
+                                    ))}
                                 </div>
-                            ) : dataType === 'Scraped' ? (
-                                <div className="flex flex-col md:flex-row gap-4 w-full">
-                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
-                                        <Database className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
-                                        <select
-                                            value={scrapedSource}
-                                            onChange={(e) => { setScrapedSource(e.target.value); setOffset(0); }}
-                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none truncate"
-                                        >
-                                            <option value="all" className="bg-slate-900">Sources: All</option>
-                                            <option value="doctify" className="bg-slate-900">🔵 Doctify</option>
-                                            <option value="ihpn" className="bg-slate-900">🟣 IHPN Members</option>
-                                            <option value="newmedica" className="bg-slate-900">🏥 Newmedica</option>
-                                            <option value="goprivate" className="bg-slate-900">🟢 GoPrivate</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
-                                        <Building2 className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
-                                        <select
-                                            value={scrapedPageType}
-                                            onChange={(e) => { setScrapedPageType(e.target.value); setOffset(0); }}
-                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none truncate"
-                                        >
-                                            <option value="all" className="bg-slate-900">Types: All</option>
-                                            <option value="specialist" className="bg-slate-900">👨‍⚕️ Doctors</option>
-                                            <option value="practice" className="bg-slate-900">🏥 Practices</option>
-                                            <option value="hospital" className="bg-slate-900">🏥 Hospitals</option>
-                                            <option value="pharmacy" className="bg-slate-900">💊 Pharmacies</option>
-                                            <option value="carehome" className="bg-slate-900">🏠 Care Homes</option>
-                                        </select>
-                                    </div>
-                                    <div className="flex-1 h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-purple-500/50 focus-within:border-purple-500/50 transition-all">
-                                        <Filter className="h-5 w-5 text-purple-400 flex-shrink-0 mr-3" />
-                                        <select
-                                            value={scrapedCategory}
-                                            onChange={(e) => { setScrapedCategory(e.target.value); setOffset(0); }}
-                                            className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none truncate"
-                                        >
-                                            <option value="all" className="bg-slate-900">Categories: All</option>
-                                            <option value="weight-loss" className="bg-slate-900">⚖️ Weight Loss</option>
-                                            <option value="hair-loss" className="bg-slate-900">💇 Hair Loss</option>
-                                            <option value="cosmetic" className="bg-slate-900">✨ Cosmetic</option>
-                                            <option value="dental" className="bg-slate-900">🦷 Dental</option>
-                                            <option value="fertility" className="bg-slate-900">🤰 Fertility</option>
-                                            <option value="physiotherapy" className="bg-slate-900">🦴 Physiotherapy</option>
-                                            <option value="eye-care" className="bg-slate-900">👁️ Eye Care</option>
-                                            <option value="mental-health" className="bg-slate-900">🧠 Mental Health</option>
-                                            <option value="dermatology" className="bg-slate-900">🧴 Dermatology</option>
-                                            <option value="cardiology" className="bg-slate-900">❤️ Cardiology</option>
-                                            <option value="general" className="bg-slate-900">🏥 General</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="w-full h-14 bg-slate-800/50 border border-slate-700/50 rounded-2xl flex items-center px-4 focus-within:ring-2 focus-within:ring-amber-500/50 focus-within:border-amber-500/50 transition-all">
-                                    <Stethoscope className="h-5 w-5 text-amber-400 flex-shrink-0 mr-3" />
+                            )}
+
+                            {dataType === 'Private' && (
+                                <select
+                                    value={serviceFilter}
+                                    onChange={(e) => { setServiceFilter(e.target.value); setOffset(0); }}
+                                    className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm"
+                                >
+                                    <option value="all">All Registered Services</option>
+                                    <option value="gp">GP / Doctors</option>
+                                    <option value="dental">Dental</option>
+                                    <option value="pharmacy">Pharmacy</option>
+                                    <option value="mental-health">Mental Health</option>
+                                </select>
+                            )}
+
+                            {dataType === 'Scraped' && (
+                                <div className="flex gap-3">
                                     <select
-                                        value={serviceFilter}
-                                        onChange={(e) => { setServiceFilter(e.target.value); setOffset(0); }}
-                                        className="w-full bg-transparent border-none text-slate-200 focus:outline-none focus:ring-0 font-medium h-full cursor-pointer appearance-none"
+                                        value={scrapedSource}
+                                        onChange={(e) => { setScrapedSource(e.target.value); setOffset(0); }}
+                                        className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm"
                                     >
-                                        <option value="all" className="bg-slate-900">All Services</option>
-                                        <optgroup label="── CQC Categories ──" className="bg-slate-900 text-slate-500">
-                                            <option value="gp" className="bg-slate-900">👨‍⚕️ GP / Doctors</option>
-                                            <option value="dental" className="bg-slate-900">🦷 Dental</option>
-                                            <option value="pharmacy" className="bg-slate-900">💊 Pharmacy</option>
-                                            <option value="mental-health" className="bg-slate-900">🧠 Mental Health</option>
-                                            <option value="surgery" className="bg-slate-900">🔧 Surgery</option>
-                                            <option value="diagnostics" className="bg-slate-900">🔬 Diagnostics</option>
-                                            <option value="homecare" className="bg-slate-900">🏠 Home Care</option>
-                                            <option value="nursing" className="bg-slate-900">🏥 Nursing Home</option>
-                                            <option value="hospice" className="bg-slate-900">🕊️ Hospice</option>
-                                            <option value="rehabilitation" className="bg-slate-900">♻️ Rehabilitation</option>
-                                            <option value="urgent-care" className="bg-slate-900">🚨 Urgent Care</option>
-                                            <option value="ambulance" className="bg-slate-900">🚑 Ambulance</option>
-                                        </optgroup>
-                                        <optgroup label="── Niche? Use Scraped Data tab ──" className="bg-slate-900 text-slate-500" disabled>
-                                        </optgroup>
+                                        <option value="all">All Sources</option>
+                                        <option value="doctify">Doctify</option>
+                                        <option value="goprivate">GoPrivate</option>
+                                        <option value="newmedica">Newmedica</option>
+                                    </select>
+                                    <select
+                                        value={scrapedPageType}
+                                        onChange={(e) => { setScrapedPageType(e.target.value); setOffset(0); }}
+                                        className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-sm"
+                                    >
+                                        <option value="all">All Content Types</option>
+                                        <option value="specialist">Specialists</option>
+                                        <option value="practice">Clinics/Practices</option>
                                     </select>
                                 </div>
                             )}
-                        </div>
+                        </motion.div>
+                    </AnimatePresence>
 
-                        <div className="md:col-span-4 flex flex-wrap gap-3 w-full md:w-auto items-center">
-
-                            {/* Region Toggle */}
-                            <div className="flex bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
-                                <button
-                                    onClick={() => { setLondonOnly(false); setCityTerm(''); }}
-                                    className={cn(
-                                        "px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2",
-                                        !londonOnly
-                                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-                                            : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
-                                    )}
-                                >
-                                    <Globe className="h-4 w-4" />
-                                    UK Wide
-                                </button>
-                                <button
-                                    onClick={() => { setLondonOnly(true); setCityTerm('London'); }}
-                                    className={cn(
-                                        "px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2",
-                                        londonOnly
-                                            ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20"
-                                            : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
-                                    )}
-                                >
-                                    <MapPin className="h-4 w-4" />
-                                    London
-                                </button>
-                            </div>
-
-                            {/* Type Toggle - Only for NHS */}
-                            {dataType === 'NHS' && (
-                                <div className="flex bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
-                                    <button
-                                        onClick={() => setRoleFilter('Pharmacy')}
-                                        className={cn(
-                                            "flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2",
-                                            roleFilter === 'Pharmacy'
-                                                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                                                : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
-                                        )}
-                                    >
-                                        <Building2 className="h-4 w-4" />
-                                        <span>Pharmacy</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setRoleFilter('Clinic')}
-                                        className={cn(
-                                            "flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2",
-                                            roleFilter === 'Clinic'
-                                                ? "bg-blue-500 text-white shadow-lg shadow-blue-500/20"
-                                                : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
-                                        )}
-                                    >
-                                        <Activity className="h-4 w-4" />
-                                        <span>Clinic</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setRoleFilter('Hospital')}
-                                        className={cn(
-                                            "flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2",
-                                            roleFilter === 'Hospital'
-                                                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
-                                                : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
-                                        )}
-                                    >
-                                        <Hospital className="h-4 w-4" />
-                                        <span>Hospital</span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Stats Row */}
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                    <div className="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap">
-                        {data.length} Results
-                    </div>
-                    <div className="px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap">
-                        Region: {cityTerm || "UK Wide"}
-                    </div>
-                    {loading && (
-                        <div className="px-4 py-2 bg-slate-800/50 text-slate-400 border border-slate-700 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                            <div className="animate-spin h-3 w-3 border-2 border-current border-t-transparent rounded-full" />
-                            Fetching...
-                        </div>
+                    {/* Reset Button */}
+                    {(searchTerm || cityTerm || serviceFilter !== 'all' || scrapedSource !== 'all') && (
+                        <button 
+                            onClick={() => {
+                                setSearchTerm('');
+                                setCityTerm('');
+                                setServiceFilter('all');
+                                setScrapedSource('all');
+                                setLondonOnly(false);
+                            }}
+                            className="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all border border-red-100"
+                        >
+                            Reset All
+                        </button>
                     )}
                 </div>
+            </div>
 
-                {/* Grid Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {data.map((lead, idx) => (
+            {/* Stats Row */}
+            <div className="flex items-center justify-between">
+                <div className="flex gap-4">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    Total Retrieved: <span className="text-slate-900 ml-1">{data.length} Leads</span>
+                    </div>
+                </div>
+                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-1.5 animate-pulse">
+                    <div className="h-1 w-1 bg-blue-600 rounded-full" />
+                    Live Database Feed
+                </div>
+            </div>
+
+            {/* Main Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+                {data.map((lead, idx) => (
+                    <motion.div
+                        key={`${lead.ODS_Code}-${idx}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: (idx % 12) * 0.05 }}
+                    >
                         <LeadCard
-                            key={`${lead.ODS_Code}-${idx}`}
                             lead={lead}
                             onEnrich={openQuickView}
                             onSave={saveLead}
                             isSaved={savedIds.has(lead.ODS_Code)}
                             isEnriched={!!lead.PhoneNumber}
                         />
-                    ))}
-                </div>
-
-                {/* Load More Trigger */}
-                {hasMore && (
-                    <div className="flex justify-center pt-8">
-                        <button
-                            onClick={() => fetchLeads()}
-                            disabled={loading}
-                            className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-semibold transition-all shadow-lg active:scale-95 disabled:opacity-50"
-                        >
-                            {loading ? "Loading..." : "Load More Results"}
-                        </button>
-                    </div>
-                )}
+                    </motion.div>
+                ))}
             </div>
+
+            {/* Load More Trigger */}
+            {hasMore && (
+                <div className="flex justify-center pt-12 pb-20">
+                    <button
+                        onClick={() => fetchLeads()}
+                        disabled={loading}
+                        className="px-12 py-4 bg-white hover:bg-slate-50 text-slate-600 rounded-2xl font-bold text-sm tracking-wide transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-3 border border-slate-200"
+                    >
+                        {loading ? (
+                            <>
+                                <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
+                                Analyzing More Records...
+                            </>
+                        ) : (
+                            <>
+                                Load Additional Data
+                                <Zap className="h-4 w-4 text-blue-600" />
+                            </>
+                        )}
+                    </button>
+                </div>
+            )}
             {/* Modals */}
             <EnrichmentModal
                 isOpen={modalOpen}
@@ -558,3 +484,5 @@ export default function LeadTable() {
         </div>
     );
 }
+
+

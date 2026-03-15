@@ -66,6 +66,17 @@ async function scrapeIHPN() {
             const phone = member.phone;
             const website = member.url;
             
+            // Determine category tags for filtering
+            const tags = ['general'];
+            const lowerName = name.toLowerCase();
+            if (lowerName.includes('specsavers') || 
+                lowerName.includes('eye') || 
+                lowerName.includes('optician') || 
+                lowerName.includes('spamedica') || 
+                lowerName.includes('optegra')) {
+                tags.push('eye-care');
+            }
+
             const leadData = {
                 source: 'ihpn',
                 name: name,
@@ -74,6 +85,7 @@ async function scrapeIHPN() {
                 address: address,
                 phone: phone,
                 website: website,
+                categories: tags,
                 raw_data: {
                     id: member.id,
                     lat: member.lat,
