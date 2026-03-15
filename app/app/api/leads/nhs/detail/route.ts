@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const ODS_API_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations";
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: { odsCode: string } }
-) {
+export async function GET(request: NextRequest) {
     const odsCode = request.nextUrl.searchParams.get('odsCode');
 
     if (!odsCode) {
