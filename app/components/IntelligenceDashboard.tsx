@@ -16,6 +16,7 @@ import {
     Search
 } from 'lucide-react';
 import clsx from 'clsx';
+import ComparativeIntelligence from './ComparativeIntelligence';
 
 interface AnalyticsData {
     summary: {
@@ -107,6 +108,15 @@ export default function IntelligenceDashboard() {
                 ))}
             </div>
 
+            {/* NEW: Comparative Intelligence Section */}
+            <div className="space-y-4">
+                <div className="flex items-center gap-3 ml-2">
+                    <div className="h-2 w-2 bg-blue-600 rounded-full animate-pulse" />
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Decision Engine V4.0</h3>
+                </div>
+                <ComparativeIntelligence />
+            </div>
+
             {/* Main Insights Panel */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 {/* Visual Chart Placeholder Area */}
@@ -183,8 +193,9 @@ export default function IntelligenceDashboard() {
                             </div>
 
                             <div className="pt-4 flex justify-center">
-                                <button className="w-full py-4 bg-white text-blue-700 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-blue-50 transition-all flex items-center justify-center gap-2 group">
-                                    Export Strategy Report
+                                <button className="w-full py-4 bg-white text-slate-900 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-white/90 transition-all flex items-center justify-center gap-2 group shadow-xl shadow-blue-900/40">
+                                    <ShieldCheck className="w-5 h-5 text-blue-600" />
+                                    Analyze Full Market Portfolio
                                     <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                 </button>
                             </div>
