@@ -30,9 +30,10 @@ import remarkGfm from 'remark-gfm';
 interface ComparativeResult {
   id: string;
   name: string;
-  source: 'doctify' | 'goprivate' | 'nhs' | 'cqc' | 'newmedica' | 'ihpn';
+  source: string;
   rating: number;
-  review_count: number;
+  reviews: number;
+  city: string;
   address: string;
   phone: string;
   email: string;
